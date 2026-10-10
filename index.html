@@ -80,6 +80,9 @@ input,select{-webkit-user-select:text;user-select:text;touch-action:auto}#setup,
 #edw h2{margin:.2em 0 .4em;font-family:'Cinzel Decorative',Cinzel,serif;font-weight:900;font-size:max(26px,calc(5*var(--q)));color:transparent;background:linear-gradient(#fff0b8,#e0aa3e 45%,#8a5a1c 55%,#e8c06a);-webkit-background-clip:text;background-clip:text;-webkit-text-stroke:calc(.15*var(--q)) #2a1808;filter:drop-shadow(0 calc(.3*var(--q)) 0 #1a0f05) drop-shadow(0 0 calc(1.4*var(--q)) rgba(255,190,80,.4))}
 .edl{font-family:Cinzel,serif;color:#e8c06a;margin:.6em 0 .3em;font-size:max(12px,calc(1.3*var(--q)))}#edw ul{list-style:none;margin:0;padding:0;text-align:left;font-size:max(13px,calc(1.3*var(--q)))}#edw li{padding:.35em 0;border-bottom:1px solid #4a3a22}#edw li span{color:#c8b890;font-weight:600}
 .edh{margin-top:1em;color:#a8946a;font-size:max(11px,calc(1.1*var(--q)));animation:blink 1.8s ease-in-out infinite}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:calc(1.6*var(--q));margin-bottom:calc(.6*var(--q))}.col{display:flex;flex-direction:column;gap:calc(.6*var(--q))}.r2{display:grid;grid-template-columns:1fr 1fr;gap:calc(.6*var(--q))}
+#setup>.tag{position:static;display:inline-block;margin:0 0 calc(.5*var(--q))}
+@media (max-aspect-ratio:4/5){.cols,.r2{grid-template-columns:1fr}}
 </style><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cinzel+Decorative:wght@700;900&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet"></head><body>
 <div id="stage"><div id="g"></div>
 <div id="ov"><div class="bx" id="hud"></div><div class="bx" id="res"></div><div class="bx" id="sel"></div>
@@ -93,7 +96,7 @@ const SPRITE_OVERRIDES={};
 const TILE_OVERRIDES={}; /* HOOK TILE: TILE_OVERRIDES[jenis]={src:'data:image/png;base64,...',n:jumlahVarian}; strip horizontal tile 16x16. jenis: water,sand,dirt,grass,rock,snow */
 /* ERA_PACE: pengali ambang K semua teknologi. 1 = normal, 2 = zaman dua kali lebih lambat, .5 = dua kali lebih cepat */
 const ERA_PACE=1;
-const VERSION='v.11.3';
+const VERSION='v.11.4';
 /* TIME_SCALE: kecepatan progres hidup (x1 = 2,5x). MOVE_COMP: 1 = kecepatan gerak tampak sama seperti sebelumnya; naikkan (mis. 1.5) bila ekonomi terasa terlalu berat */
 const TIME_SCALE=2.5,MOVE_COMP=1,MOVE_K=MOVE_COMP/TIME_SCALE;
 /* SPRITE POHON & BUSH dari folder asset/map/ (aktif otomatis bila file ditemukan). Boleh juga isi 'src' dengan data-URI. cw/ch = ukuran 1 frame, fy = baris titik pijak */
@@ -126,24 +129,30 @@ const MAPS=[
 {n:'Cold Valley & Lake',d:'Lembah sejuk diapit punggung gunung dengan danau di barat. Ikan banyak, panen pendek.',b:.7,tr:1.3,rk:1.1,dr:.9,sk:.9,fe:.7,riv:1,tp:1,sl:.56,rl:.36,ct:{sh:.02,a:[.07,.06,.05],f:[.0033,.0039,.0052],p:[.5,1.9,.8],k:[1,-.5],n:.08,sc:110,ns:67,g:[{x:1600,y:220,rx:1000,ry:200,h:.5},{x:1600,y:2300,rx:1000,ry:190,h:.45},{x:2850,y:1200,rx:240,ry:520,h:.3}]},wt:[{t:'l',cx:520,cy:1500,rx:360,ry:290}],pal:{...PD,gd:[58,100,108],gl:[98,140,150],dt:[104,100,100],rk:[130,136,152],sn:[246,250,255],sd:[196,208,214],wd:[30,70,120],wl:[74,128,176],dry:.14,ps:120,fw:8,sw:14}}
 ];
 const TEND=[
-{n:'Maju tapi Sulit Beranak',d:'Penemuan cepat, kelahiran sedikit.',tech:1.7,fert:.6},
-{n:'Ramai tapi Lambat Maju',d:'Banyak anak, penemuan lambat.',tech:.6,fert:1.7},
-{n:'Kuat tapi Banyak yang Bodoh',d:'Pemburu tangguh, bakat otak rendah.',hunt:1.5,iq:.7,tech:.75},
-{n:'Damai tapi Rapuh',d:'Jarang diserang hewan buas, mudah sakit.',host:.3,sick:1.4},
-{n:'Petani Ulet',d:'Panen unggul, berburu lemah.',farm:1.5,hunt:.8},
-{n:'Pemburu Tangguh',d:'Buruan melimpah, bertani sulit.',hunt:1.5,farm:.7},
-{n:'Pedagang Cerdik',d:'Pangan awet, penemuan sedang.',spoil:.5,tech:1.15},
-{n:'Penyintas Keras',d:'Tahan penyakit, kurang subur, lambat maju.',sick:.6,fert:.85,tech:.8},
-{n:'Cerdas tapi Ringkih',d:'Otak tajam, gampang sakit.',iq:1.4,sick:1.5,tech:1.2},
-{n:'Pembiak Liar',d:'Sangat subur, hewan buas sering datang.',fert:2,host:1.6,sick:1.2},
-{n:'Penjaga Alam',d:'Aman dari hewan buas, panen baik, maju pelan.',host:.5,farm:1.2,tech:.9},
-{n:'Bengis Berjaya',d:'Pemburu ulung, tapi dikelilingi bahaya.',hunt:1.6,host:1.8,fert:1.2}];
+{n:'Seimbang',d:'Sedikit lebih baik di segalanya: panen, buruan, kelahiran, dan penemuan +5%.',farm:1.05,hunt:1.05,fert:1.05,tech:1.05},
+{n:'Petani Unggul',d:'Farmer kerja 20% lebih cepat · Hasil ternak +15% lebih banyak.',fspd:1.2,herd:1.15},
+{n:'Militer Kuat',d:'Warrior HP +15% & DEF +10% · Villager HP +25%.',whp:1.15,wdef:1.1,vhp:1.25},
+{n:'Pedagang Ulung',d:'Diskon biaya pembangunan 15%.',cost:.85},
+{n:'Pemburu Handal',d:'Buruan 25% lebih jitu · Hewan buas 25% lebih jarang menyerang.',hunt:1.25,host:.75},
+{n:'Cendekia Cepat',d:'Penemuan teknologi 25% lebih cepat · Anak belajar 20% lebih cepat.',tech:1.25,edu:1.2},
+{n:'Subur Makmur',d:'Kelahiran +30% · Penyakit 15% lebih jarang.',fert:1.3,sick:.85},
+{n:'Penambang Tangguh',d:'Hasil tambang dan hasil Forager +25% · Diskon biaya bangunan 5%.',ore:1.25,gath:1.25,cost:.95},
+{n:'Pengrajin Mahir',d:'Hasil Crafting +25% · Pangan awet 25% lebih lama.',craft:1.25,spoil:.75},
+{n:'Penjaga Menara',d:'Archer menembak 30% lebih cepat · Diskon biaya bangunan 10%.',arch:1.3,cost:.9},
+{n:'Diplomat Ramah',d:'Sikap desa tetangga naik 50% lebih cepat · Hasil dagang +20%.',dip:1.5,trade:1.2},
+{n:'Tabib Bijak',d:'Pemulihan HP +40% · Penyakit 20% lebih jarang.',heal:1.4,sick:.8},
+{n:'Panjang Umur',d:'Umur hidup +15% · Pemulihan HP +15%.',life:1.15,heal:1.15},
+{n:'Jenius Bertuah',d:'Jenius lahir 80% lebih sering · Penemuan teknologi +10%.',gen:1.8,tech:1.1},
+{n:'Pelindung Alam',d:'Panen +10% · Hewan buas 35% lebih jarang menyerang.',farm:1.1,host:.65}];
 function elev(x,y){const c=MAP.ct,e0=Math.min(.3,(MAP.rl||.42)-.08),f=c.f,p=c.p,a=c.a;let e=e0+c.sh+a[0]*Math.sin(x*f[0]+p[0])+a[1]*Math.cos(y*f[1]+p[1])+a[2]*Math.sin((x*c.k[0]+y*c.k[1])*f[2]+p[2])+(c.tx||0)*(x-CAMP.x)+(c.ty||0)*(y-CAMP.y);
  if(c.n)e+=c.n*(vnz(x/c.sc+c.ns,y/c.sc+c.ns*1.7)-.5);for(const g of c.g||[])e+=g.h*Math.exp(-(((x-g.x)/g.rx)**2+((y-g.y)/g.ry)**2));
  const dc=Math.hypot(x-CAMP.x,(y-CAMP.y)*1.2),t=cl((dc-640)/560,0,1),m=.15+.85*t*t*(3-2*t);return e0+(e-e0)*m}
 function wdist(x,y){const W=MAP.wt;if(!W||!W.length)return 999;let d=999;for(const f of W){let v;if(f.t==='r')v=Math.abs(y-(f.cy+Math.sin(x*f.fr+f.ph)*f.amp))-f.w;else if(f.t==='l')v=(Math.hypot((x-f.cx)/f.rx,(y-f.cy)/f.ry)-1)*Math.min(f.rx,f.ry);else{const sd=f.side,t=sd==='w'||sd==='e'?y:x,ed=f.e+Math.sin(t*f.fr+f.ph)*f.amp+Math.sin(t*f.fr*2.7+f.ph*2)*f.amp*.35,pos=sd==='w'?x:sd==='e'?WW-x:sd==='n'?y:WH-y;v=pos-ed}if(v<d)d=v}return d}
 const river=(x,y)=>wdist(x,y)<10;
 function lp(e,fx,fy){for(let i=0;i<14;i++){const a=e+i*.45,x=cl(CAMP.x+Math.cos(a)*fx,80,WW-80),y=cl(CAMP.y+Math.sin(a)*fy,80,WH-80);if(wdist(x,y)>14)return{x,y}}return{x:CAMP.x+fx*.6,y:CAMP.y}}
+const TRL={dagang:'pedagang',perang:'pejuang',damai:'cinta damai'},ERX={5:'<li><b>Desa Tetangga</b><br><span>Kontak pertama: dagang, aliansi, atau permusuhan</span></li>'};
+const mixW=(c,t)=>{const m=v=>(v+(255-v)*t)|0;return(m(c>>16&255)<<16)|(m(c>>8&255)<<8)|m(c&255)};
+function showDip(g,v){const e=document.getElementById('fate');e.className='bx good';e.style.display='block';e.innerHTML='<span class="tag">🤝 Diplomasi</span><h3>Desa '+v.name+' menawarkan aliansi</h3><div>Pemimpin '+v.leader+' ('+TRL[v.trait]+') ingin bersekutu denganmu.</div><div class="hint">Terima: pertahanan desa +8% · kafilah dagang lebih sering dan lebih untung · desa itu tidak akan menyerang.<br>Tolak: sikap mereka turun sedikit.</div><div style="display:flex;gap:calc(1*var(--q));margin-top:calc(.8*var(--q))"><button data-a="1">Terima Aliansi</button><button data-a="0">Tolak</button></div>';e.onclick=q=>{const b=q.target.closest('button');if(b){e.style.display='none';g.dipDone(v,+b.dataset.a)}}}
 const FEAT={fire:'Api unggun: cahaya & hangat · Priest bisa muncul (populasi ≥12)',tools:'Alat batu: berburu dan mengumpulkan lebih efektif',spear:'Job Warrior · patroli · Barracks (melatih kadet anak)',farm:'Plant box dan panen',herd:'Ternak: kambing & ayam (sapi menyusul)',pot:'Crafting Workshop · pangan lebih awet',cloth:'Pakaian: tahan dingin',well:'Sumur batu di dalam desa: penyakit berkurang',trade:'Market · barang dagangan ditukar pangan',mining:'Tambang di lereng berbatu: Forager menggali bijih, Forge meleburnya jadi besi',smelt:'Forge · Job Blacksmith · zirah petarung',plaza:'Alun-alun & api unggun besar',house:'Rumah kayu · jalan semi-paved',irrig:'Plant box ditingkatkan jadi lahan tani · Farm Silo',school:'Pendidikan: Academy untuk anak (butuh Scholar)',brick:'Rumah batu & kayu · jalan paved',hall:'Balai desa & Benteng · Raja memimpin',imperial:'Era Imperial: kerajaan besar (fitur imperial menyusul)'};
 function slow(){if(typeof GM!=='undefined'&&GM&&GM.si>1)GM.si=1}
 function fadePop(e){e.classList.add('out');setTimeout(()=>e.remove(),700)}
@@ -151,7 +160,7 @@ function clearPop(key){const e=document.querySelector('#ap [data-k="'+key+'"]');
 function miniPop(key,ic,t,sub,o){o=o||{};const c=document.getElementById('ap');if(!c)return;let e=c.querySelector('[data-k="'+key+'"]');if(!e){e=document.createElement('div');e.dataset.k=key;c.appendChild(e)}
  e.className='mp'+(o.danger?' dg':'')+(o.big?' big':'');e.innerHTML='<span class="mpi">'+ic+'</span><span><b>'+t+'</b>'+(sub?'<small>'+sub+'</small>':'')+'</span>';clearTimeout(e._t);if(!o.sticky)e._t=setTimeout(()=>fadePop(e),o.ms||4500)}
 function showEra(ei){const e=document.getElementById('ed');if(!e)return;slow();const L=ERQ[ei].map(k=>{const t=TECH.find(x=>x[0]===k);return'<li><b>'+t[1]+'</b><br><span>'+(FEAT[k]||t[4])+'</span></li>'}).join('');
- e.innerHTML='<div id="edw"><small>ZAMAN BARU</small><h2>'+ERA[ei]+'</h2><div class="edl">Fitur yang terbuka:</div><ul>'+L+'</ul><div class="edh">Ketuk atau klik di mana saja untuk melanjutkan</div></div>';e.classList.add('on');e.onclick=()=>e.classList.remove('on')}
+ e.innerHTML='<div id="edw"><small>ZAMAN BARU</small><h2>'+ERA[ei]+'</h2><div class="edl">Fitur yang terbuka:</div><ul>'+L+(ERX[ei]||'')+'</ul><div class="edh">Ketuk atau klik di mana saja untuk melanjutkan</div></div>';e.classList.add('on');e.onclick=()=>e.classList.remove('on')}
 function loadMapAssets(){return Promise.all(Object.entries(MAP_SPRITES).map(([k,sp])=>new Promise(res=>{const urls=sp.src?[sp.src]:[ASSET_DIR+sp.file,'/'+ASSET_DIR+sp.file];const tr=i=>{if(i>=urls.length)return res();const im=new Image();im.onload=()=>{if(im.width>=sp.cw&&im.height>=sp.ch)MAPIMG[k]=im;res()};im.onerror=()=>tr(i+1);im.src=urls[i]};tr(0)})))}
 function mapSprites(s){for(const [k,sp] of Object.entries(MAP_SPRITES)){const im=MAPIMG[k];if(!im)continue;const n=Math.min(sp.frames.length,Math.floor(im.width/sp.cw));if(!n)continue;const m=MUL(),cv=document.createElement('canvas');cv.width=n*sp.cw*m;cv.height=sp.ch*m;const g=cv.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(im,0,0,n*sp.cw,sp.ch,0,0,cv.width,cv.height);const key='tx_'+k,t=s.textures.addCanvas(key,cv);for(let i=0;i<n;i++)t.add(sp.frames[i],0,i*sp.cw*m,0,sp.cw*m,sp.ch*m);if(MODE)t.setFilter(Phaser.Textures.FilterMode.LINEAR);SH[key]={cw:sp.cw,ch:sp.ch,fy:sp.fy};TXK[k]=key;console.info('[DoomCivil] aset peta aktif: '+k+' ('+n+' frame)')}}
 function makeIcons(s){if(s.textures.exists('ico_raid'))return;const c=s.textures.createCanvas('ico_raid',40,44),g=c.getContext();g.shadowColor='#ff2a1a';g.shadowBlur=9;g.fillStyle='#c4231c';g.strokeStyle='#ffd0c8';g.lineWidth=2;g.beginPath();g.moveTo(20,6);g.lineTo(33,11);g.lineTo(31,26);g.quadraticCurveTo(28,34,20,38);g.quadraticCurveTo(12,34,9,26);g.lineTo(7,11);g.closePath();g.fill();g.shadowBlur=0;g.stroke();g.strokeStyle='#ffffff';g.lineWidth=3;g.beginPath();g.moveTo(14,15);g.lineTo(26,29);g.moveTo(26,15);g.lineTo(14,29);g.stroke();c.refresh()}
@@ -383,6 +392,7 @@ function bInfo(e){const g=GM,T=g.tech,[ty,o,sp]=e,k=sp.texture.key,fr=sp.frame.n
  else if(ty==='bld')r=[DS[o][0],'Bangunan produksi',[DS[o][1]]];
  else if(ty==='field')r=[o.up?'Lahan Tani':'Kebun / Plant Box','Tahap: '+['kosong','bibit','tumbuh','siap panen'][o.st],['Kesuburan tanah '+Math.round((g.soil||1)*100)+'%.','Tanah lelah jika terlalu sering dipanen.']];
  else if(ty==='herd')r=[{goat:'Kambing',chick:'Ayam',cow:'Sapi'}[o.kd],'Ternak desa',[{goat:'Sumber daging dan kulit.',chick:'Menghasilkan telur tiap hari.',cow:'Menghasilkan susu dan tenaga.'}[o.kd]]];
+ else if(ty==='village')r=['Desa '+o.name,'Hubungan: '+GM.vRel(o)+' ('+(o.att>=0?'+':'')+Math.round(o.att)+')',['Pemimpin: '+o.leader+' · '+TRL[o.trait],'Kekuatan: '+o.str.toFixed(1)+' · Spesialisasi: '+o.spec,'Kafilah dagang: '+(o.trades|0)+(o.ally?' · SEKUTU: pertahanan +8%, dagang lebih untung':'')]];
  else if(ty==='tower')r=['Watch Tower','HP '+Math.round(o.hp)+'/'+o.mx,['Archer 1 · menembakkan panah api ke penyerbu dan hewan buas dalam jangkauan.','Bisa rusak karena serangan dan cuaca; diperbaiki otomatis bila bahan ada.']];
  else r=['Gerbang Desa','Pintu masuk',['Satu-satunya jalan keluar-masuk desa. Pagar tidak bisa ditembus.']];
  showInfo(r[0],r[1],r[2],k,fr)}
@@ -401,7 +411,7 @@ class Game extends Phaser.Scene{
   scat(260*MAP.tr,(x,y,e)=>{if(e<.78)this.mkTree(x,y,e)},150,1150);
   scat(60*MAP.rk,(x,y,e)=>{if(e>.3){const s=put(this,'props','boulder',x,y).setDepth(y);this.rocks.push({x,y,s,w:8})}},180,1100);
   scat(34*MAP.b,(x,y,e)=>{if(e<.6){const s=put(this,TXK.bush||'bush','b1',x,y).setDepth(y);this.bushes.push({x,y,s,b:3,g:rnd()})}},120,800);
-  scat(16*MAP.dr,(x,y,e)=>{if(e<.6)this.mkDeer(x,y,Math.random()<.25?1:Math.random()<.12?2:Math.random()<.08?3:0)},250,1000);this.t0=this.trees.length;this.shore=[];for(let x=100;x<WW-100;x+=48)for(let y=100;y<WH-100;y+=48){const dd=wdist(x,y);if(dd>8&&dd<30)this.shore.push({x,y,d:Math.hypot(x-CAMP.x,y-CAMP.y)})}this.shore.sort((p,q)=>p.d-q.d);this.shore=this.shore.slice(0,50);
+  scat(16*MAP.dr,(x,y,e)=>{if(e<.6)this.mkDeer(x,y,Math.random()<.25?1:Math.random()<.12?2:Math.random()<.08?3:0)},250,1000);this.t0=this.trees.length;this.shore=[];for(let x=100;x<WW-100;x+=48)for(let y=100;y<WH-100;y+=48){const dd=wdist(x,y);if(dd>8&&dd<30)this.shore.push({x,y,d:Math.hypot(x-CAMP.x,y-CAMP.y)})}this.shore.sort((p,q)=>p.d-q.d);this.shore=this.shore.slice(0,50);this.initVillages();
   this.dim=this.add.rectangle(W/2,H/2,W*9,H*9,0x0a1030,0).setScrollFactor(0).setDepth(900);this.tn=this.add.rectangle(W/2,H/2,W*9,H*9,0xffffff,0).setScrollFactor(0).setDepth(899);
   this.glow=this.add.circle(CAMP.x,CAMP.y,150,0xffa040,0).setDepth(2);this.ring=this.add.graphics().setDepth(5000);
   const em=(k,c)=>this.add.particles(0,0,k,Object.assign({x:{min:0,max:W},y:-10,emitting:false},c)).setScrollFactor(0).setDepth(901);
@@ -420,7 +430,7 @@ class Game extends Phaser.Scene{
  mkTree(x,y,e){if(this.huts&&this.obs().some(o=>Math.hypot(x-o[0],(y-o[1])*1.2)<o[2]))return;const fr0=e>((MAP.sl||.68)-.02)?'tree_snow':'tree',tk=TXK.tree,hf=f=>tk&&this.textures.get(tk).has(f),[k2,f2]=hf(fr0)?[tk,fr0]:hf('tree')?[tk,'tree']:['props',fr0],s=put(this,k2,f2,x,y).setDepth(y);this.trees.push({x,y,s,w:6,sn:fr0==='tree_snow'})}
  tal(){const q=td('iq');return{craft:cl(R(.5,1.5)*q,.3,2),hunt:R(.5,1.5),farm:R(.5,1.5),herd:R(.5,1.5),trade:R(.5,1.5),war:R(.3,1.5),mind:R(.4,1.6),fora:R(.4,1.6),faith:R(.3,1.5)}}
  mkAgent(sex,age,x,y,tl,gen){
-  const a={id:++this.nid,sex,age,x,y,hun:85,en:90,hp:100,task:null,sl:false,out:false,work:false,walk:false,dir:'d',fl:false,hut:null,why:'',ct:'',cn:0,life:R(42,54)*365*SIMF,tl:tl||this.tal(),xp:{craft:0,hunt:0,farm:0,herd:0,trade:0,war:0,mind:0,faith:0,fora:0},gen:gen||null,
+  const a={id:++this.nid,sex,age,x,y,hun:85,en:90,hp:100,task:null,sl:false,out:false,work:false,walk:false,dir:'d',fl:false,hut:null,why:'',ct:'',cn:0,life:R(42,54)*365*SIMF*td('life'),tl:tl||this.tal(),xp:{craft:0,hunt:0,farm:0,herd:0,trade:0,war:0,mind:0,faith:0,fora:0},gen:gen||null,
    name:(s=>s[0].toUpperCase()+s.slice(1))(pick(SY)+pick(SY)),hx:CAMP.x+R(-50,50),hy:CAMP.y+R(-30,40)};
   a.spr=put(this,sex==='m'?'hero_m':'hero_f'+(Math.random()*3|0),'d_i0',x,y).setTint(pick([0xffffff,0xf4e4d4,0xe8cfb8,0xd8b898]));a.sh=this.add.image(x,y,'shadow').setScale(2).setAlpha(.35);
   if(gen)a.star=this.add.text(0,0,'★',{fontSize:'16px',color:'#ffe14a',stroke:'#000',strokeThickness:3}).setOrigin(.5).setDepth(5000);
@@ -434,24 +444,23 @@ class Game extends Phaser.Scene{
  if(!this.king&&n>=12&&this.K>150){const sk=a=>a.tl.trade+a.tl.war+(a.gen==='pemimpin'?3:0),c=ad.filter(a=>a.age<20000).sort((a,b)=>sk(b)-sk(a))[0];
   if(c){this.king=c;c.king=1;c.title=T.hall?'Raja':'Ketua';c.cr=this.add.text(0,0,'♛',{fontSize:'16px',color:'#ffd23a',stroke:'#000',strokeThickness:3}).setOrigin(.5).setDepth(5000);this.ev('Pencapaian: <b>'+c.name+'</b> diangkat menjadi '+c.title+' desa.')}}
  if(this.king){this.leader=true;this.king.stay=Math.random()<.6;if(T.hall)this.king.title='Raja'}
- for(const b of BLD){const pp=!B[b[0]]&&b[3](T)&&(b[0]!=='smith'||(this.jobN&&this.jobN.blacksmith>0))&&(b[0]!=='barrack'||(this.jobN&&this.jobN.warrior>0))&&(b[0]!=='academy'||(this.jobN&&this.jobN.scholar>0))&&S.wood>=b[4][0]&&S.stone>=b[4][1]?this.spot(110,300,62):null;if(pp){S.wood-=b[4][0];S.stone-=b[4][1];const x=pp.x,y=pp.y;this.clear(x,y,60);B[b[0]]=put(this,'bld',b[2],x,y).setDepth(y);this.ev('Upgrade: '+b[1]+' berdiri.');break}}
- if(T.hall){const tr=T.brick?(T.smelt?2:1):0;if(!B.castle&&S.wood>=30&&(this.cp=this.spot(120,300,96))){S.wood-=30;this.clear(this.cp.x,this.cp.y,90);B.castle=put(this,'bld','castle0',this.cp.x,this.cp.y).setDepth(this.cp.y).setScale(SC()*1.3);B.ct=0;this.ev('Pencapaian: Benteng pertama (kayu besar) berdiri.')}
+ for(const b of BLD){const pp=!B[b[0]]&&b[3](T)&&(b[0]!=='smith'||(this.jobN&&this.jobN.blacksmith>0))&&(b[0]!=='barrack'||(this.jobN&&this.jobN.warrior>0))&&(b[0]!=='academy'||(this.jobN&&this.jobN.scholar>0))&&S.wood>=b[4][0]*td('cost')&&S.stone>=b[4][1]*td('cost')?this.spot(110,300,62):null;if(pp){S.wood-=b[4][0]*td('cost');S.stone-=b[4][1]*td('cost');const x=pp.x,y=pp.y;this.clear(x,y,60);B[b[0]]=put(this,'bld',b[2],x,y).setDepth(y);this.ev('Upgrade: '+b[1]+' berdiri.');break}}
+ if(T.hall){const tr=T.brick?(T.smelt?2:1):0;if(!B.castle&&S.wood>=30*td('cost')&&(this.cp=this.spot(120,300,96))){S.wood-=30*td('cost');this.clear(this.cp.x,this.cp.y,90);B.castle=put(this,'bld','castle0',this.cp.x,this.cp.y).setDepth(this.cp.y).setScale(SC()*1.3);B.ct=0;this.ev('Pencapaian: Benteng pertama (kayu besar) berdiri.')}
   else if(B.castle&&tr>B.ct&&S.stone>=30&&S.wood>=20){S.stone-=30;S.wood-=20;B.ct=tr;B.castle.setFrame('castle'+tr);this.ev('Pencapaian: Benteng ditingkatkan ('+['kayu besar','kayu & batu','batu penuh'][tr]+').')}}
  this.fenceStep(T,S,n);this.towerStep(S);this.econStep(T,S);if(this.fc&&this.wx==='badai'&&Math.random()<.1)this.breakFence(3,1);if(this.fc){if(this.wx==='badai'&&Math.random()<.35)this.hitTowers(R(15,45),'badai',3);else if(this.wx==='hujan'&&Math.random()<.1)this.hitTowers(R(5,12),'hujan',2)}
  if(T.brick){const h=this.huts.find(h=>h.cap===6);if(h&&S.stone>=8&&S.wood>=4){S.stone-=8;S.wood-=4;h.cap=8;h.s.setTexture('house','stone').setOrigin(.5,SH.house.fy/SH.house.ch).setScale(SC());this.ev('Upgrade: rumah kayu diperkuat batu.')}}
  const hs=this.hs=this.hs||[],hw=Math.min(this.herd,14),av=['goat'].concat(T.herd?['chick']:[],T.irrig||T.brick?['cow']:[]);while(hs.length<hw){const pp=this.spot(90,310,24,60,48);if(!pp)break;const y=pp.y,kd=av[hs.length%av.length],q=put(this,'fauna',kd+'0',pp.x,y).setDepth(y);q.kd=kd;hs.push(q)}while(hs.length>hw)hs.pop().destroy();
- S.food+=hs.filter(q=>q.kd==='chick').length*.15+hs.filter(q=>q.kd==='cow').length*.4;
+ S.food+=(hs.filter(q=>q.kd==='chick').length*.15+hs.filter(q=>q.kd==='cow').length*.4)*td('herd');
  const rt=T.brick?3:T.house?2:this.huts.length>=3?1:0;this.roads(rt);
  const adN=this.ag.filter(a=>a.age>=5110).length;if(adN===0&&n>0){if(!this.ext){this.ext=1;slow();miniPop('ext','☠️','DI AMBANG KEPUNAHAN','Tidak ada dewasa tersisa',{danger:1,big:1,ms:8000})}}else this.ext=0;
   if(adN<=3&&n>0&&(!this.wrn||this.t-this.wrn>8760)){this.wrn=this.t;this.ev('Peringatan: hanya '+adN+' dewasa tersisa untuk '+(n-adN)+' anak.')}
   if(adN<3&&n>0&&(!this.rsc||this.t-this.rsc>2880)){this.rsc=this.t;this.arrive(2,'Pendatang: 2 penyintas dewasa menemukan desa dan menolong anak-anak.')}
   if(n>=3&&this.ag.length<Math.min(400,CFG.max)&&S.food>=n*1.5&&Math.random()<.0025*(S.food>n*3?1.8:1)){const k=1+((Math.random()*2)|0);this.arrive(k,'Pendatang: '+k+' pengembara dewasa tiba dan bergabung sebagai villager.')}
-  if(!this.raid&&n>=15&&this.K>200&&Math.random()<.012){const e=R(0,6.28),sp0=lp(e,760,600),sx=sp0.x,sy=sp0.y,k=Math.min(10,3+Math.floor(n/10)),c=pick([0x9a3a3a,0x3a5a9a,0x5a3a7a]);
-  this.raid={ph:0,sx,sy,l:[]};for(let i=0;i<k;i++){const q=put(this,'hero_r','s_i0',sx+R(-30,30),sy+R(-20,20)).setTint(pick([0xffffff,0xcce0ff,0xffd8b0]));this.raid.l.push({s:q,x:q.x,y:q.y,pw:R(.7,1.4)*(T.smelt?1.4:1),hp:3,ic:this.mkRaidIcon(q.x,q.y)})}
-  const ld=this.raid.l[0];ld.hp=6;ld.s.setScale(SC()*1.35);ld.cr=this.add.text(0,0,'♛',{fontSize:'14px',color:'#ff6a3a',stroke:'#000',strokeThickness:3}).setOrigin(.5).setDepth(5000);this.ev('Serangan: pasukan pengembara asing terlihat mendekat dari kejauhan!')}
+  if(!this.raid&&n>=15&&this.K>200&&Math.random()<(this.vil&&this.vil.some(v=>v.known)?.004:.012))this.spawnRaid(null);
+  this.villageStep(T,S,n);
  }
- mkHut(){const T=this.tech,S=this.S,big=T.house,c=big?8:6;if(S.wood<c)return;const p=this.spot(110,300,48);if(!p)return;S.wood-=c;this.clear(p.x,p.y,44);const q=big?put(this,'house','house',p.x,p.y):put(this,'props','tent',p.x,p.y);q.setDepth(p.y);this.huts.push({x:p.x,y:p.y,occ:0,s:q,cap:big?6:4});this.rsg=null;this.ev((big?'Rumah kayu':'Gubuk')+' berdiri.')}
- rstep(s){const r=this.raid;if(!r)return;if(!r.l.length){this.raidWin++;this.raid=null;this.ev('Serangan: pasukan asing dipukul mundur oleh panah Watch Tower!');return}let cx=0,cy=0,done=0;r.l.forEach(o=>{cx+=o.x;cy+=o.y});r.cx=cx/r.l.length;r.cy=cy/r.l.length;
+ mkHut(){const T=this.tech,S=this.S,big=T.house,c=(big?8:6)*td('cost');if(S.wood<c)return;const p=this.spot(110,300,48);if(!p)return;S.wood-=c;this.clear(p.x,p.y,44);const q=big?put(this,'house','house',p.x,p.y):put(this,'props','tent',p.x,p.y);q.setDepth(p.y);this.huts.push({x:p.x,y:p.y,occ:0,s:q,cap:big?6:4});this.rsg=null;this.ev((big?'Rumah kayu':'Gubuk')+' berdiri.')}
+ rstep(s){const r=this.raid;if(!r)return;if(!r.l.length){this.raidWin++;this.raidEnd(r,1);this.raid=null;this.ev('Serangan: pasukan asing dipukul mundur oleh panah Watch Tower!');return}let cx=0,cy=0,done=0;r.l.forEach(o=>{cx+=o.x;cy+=o.y});r.cx=cx/r.l.length;r.cy=cy/r.l.length;
   r.l.forEach(o=>{const tx=r.ph===2?r.sx:CAMP.x,ty=r.ph===2?r.sy:CAMP.y,w=this.wp(o.x,o.y,tx,ty),dx=w.x-o.x,dy=w.y-o.y,d=Math.hypot(dx,dy),st=Math.min(d,70*MOVE_K*s),i=Math.floor(this.t*3)%4;
    if(r.ph===1){o.s.setFrame('s_a'+(Math.floor(this.t*6)%3)).setFlipX(o.x>r.sx*0+r.cx+1)}
    else if(d>4&&(r.ph===2||w.f===0||d>40)){const nx=o.x+dx/d*st,ny=o.y+dy/d*st;if(!this.hit(o.x,o.y,nx,ny)){o.x=nx;o.y=ny}o.s.setFrame(Math.abs(dy)>Math.abs(dx)?(dy>0?'d_w':'u_w')+i:'s_w'+i).setFlipX(dx<0)}else done++;
@@ -459,9 +468,9 @@ class Game extends Phaser.Scene{
   if(r.ph===0&&(r.l.some(o=>Math.hypot(o.x-CAMP.x,o.y-CAMP.y)<190)||this.ag.some(a=>a.sold&&r.l.some(o=>Math.hypot(o.x-a.x,o.y-a.y)<60)))){r.ph=1;r.fc=0;this.ag.forEach(a=>{if(a.sold)a.sl=false})}
   else if(r.ph===1){r.fc+=s;if(r.fc>=6){r.ph=2;this.fight(r)}}
   else if(r.ph===2&&r.l.length&&done===r.l.length||r.ph===2&&!r.l.length){r.l.forEach(o=>{this.rkill(o)});this.raid=null}}
- fight(r){const so=this.ag.filter(a=>a.sold),T=this.tech,def=so.reduce((q,a)=>q+2.5*a.tl.war*(.7+.3*E(a,'war')),0)*(1+.5*(this.armR||0))*(T.smelt&&this.S.iron>0?1.5:T.spear?1.2:1)*(this.bld.barrack?1.3:1)*(1+(this.fz?this.fz.length/30:0)*(T.smelt?1:.6))*(this.bld.castle?1.5:1)*(1+this.towerPow())*(1+this.kingBonus())+(this.king?1:0),att=r.l.reduce((q,o)=>q+o.pw,0);
-  if(def>=att*.9){this.raidWin++;const k=Math.ceil(r.l.length*.6);for(let i=0;i<k;i++){const o=r.l.pop();if(o){this.puff(o.x,o.y,0x9a3a3a);this.rkill(o)}}if(!r.l.length)this.raid=null;so.slice(0,2).forEach(a=>a.hp-=R(10,40));this.hitTowers(R(8,30),'serangan',1);this.ev('Serangan: pasukan asing dipukul mundur prajurit desa!')}
-  else{this.raidLose++;const k=Math.max(1,Math.round(this.ag.length*R(.04,.1)));this.ag.slice().sort((a,b)=>(a.age<5110?0:1)-(b.age<5110?0:1)+R(-.5,.5)).slice(0,k).forEach(a=>this.die(a,'serangan pengembara'));this.S.food*=(this.bld.silo?.7:.5);this.S.wood*=.7;this.S.goods*=.5;this.hitTowers(R(60,140),'serangan',2);this.breakFence(8);this.ev('Serangan: pengembara asing menjarah desa! '+k+' warga gugur, pangan dirampas.')}}
+ fight(r){const so=this.ag.filter(a=>a.sold),T=this.tech,def=so.reduce((q,a)=>q+2.5*a.tl.war*(.7+.3*E(a,'war')),0)*(1+.5*(this.armR||0))*(T.smelt&&this.S.iron>0?1.5:T.spear?1.2:1)*(this.bld.barrack?1.3:1)*(1+(this.fz?this.fz.length/30:0)*(T.smelt?1:.6))*(this.bld.castle?1.5:1)*(1+this.towerPow())*(1+this.allyPow())*(1+this.kingBonus())*td('wdef')+(this.king?1:0),att=r.l.reduce((q,o)=>q+o.pw,0);
+  if(def>=att*.9){this.raidWin++;this.raidEnd(r,1);const k=Math.ceil(r.l.length*.6);for(let i=0;i<k;i++){const o=r.l.pop();if(o){this.puff(o.x,o.y,0x9a3a3a);this.rkill(o)}}if(!r.l.length)this.raid=null;so.slice(0,2).forEach(a=>a.hp-=R(10,40));this.hitTowers(R(8,30),'serangan',1);this.ev('Serangan: pasukan asing dipukul mundur prajurit desa!')}
+  else{this.raidLose++;this.raidEnd(r,0);const k=Math.max(1,Math.round(this.ag.length*R(.04,.1)));this.ag.slice().sort((a,b)=>(a.age<5110?0:1)-(b.age<5110?0:1)+R(-.5,.5)).slice(0,k).forEach(a=>this.die(a,'serangan pengembara'));this.S.food*=(this.bld.silo?.7:.5);this.S.wood*=.7;this.S.goods*=.5;this.hitTowers(R(60,140),'serangan',2);this.breakFence(8);this.ev('Serangan: pengembara asing menjarah desa! '+k+' warga gugur, pangan dirampas.')}}
  fin(why){this.si=0;document.getElementById('fate').style.display='none';const y=Math.floor(this.t/8760),n=this.ag.length,T=Object.keys(this.tech).length,S=this.S,
   sc={'Populasi':n*5+this.born*2,'Ekonomi':Math.floor(S.food+S.wood+S.stone+S.iron*4+S.goods*3),'Teknologi':T*100+Math.floor(this.K),'Militer':this.ag.filter(a=>a.sold).length*60+this.raidWin*150,'Budaya':this.gens.length*200+Object.keys(this.bld).length*80},tot=Object.values(sc).reduce((a,b)=>a+b,0),mx=Math.max(1,...Object.values(sc)),s=document.getElementById('setup');s.style.display='block';
   s.innerHTML='<span class="tag">🏆 Hasil Akhir</span><h2>'+why+'</h2><p>'+TR.n+' di '+MAP.n+' · '+y+' tahun · Era <b>'+ERA[this.eraI()]+'</b> · Pimpinan: '+(this.king?this.king.title+' '+this.king.name:'-')+'</p><table style="width:100%">'+Object.entries(sc).map(([k,v])=>'<tr><td style="width:18%">'+k+'</td><td><div style="background:#c8962a;height:calc(.9*var(--q));width:'+Math.round(v/mx*100)+'%"></div></td><td style="width:12%;text-align:right">'+v+'</td></tr>').join('')+'</table><p>Pop akhir '+n+' · lahir '+this.born+' · wafat '+this.dead+' · jenius '+this.gens.length+' · penemuan '+T+'/'+TECH.length+' · serangan ditahan '+this.raidWin+'/'+(this.raidWin+this.raidLose)+'<br>Kematian terbanyak: '+this.topDeaths()+'<br>Skor total <b>'+tot+'</b></p><button onclick="location.reload()">Main lagi</button>'}
@@ -470,7 +479,7 @@ class Game extends Phaser.Scene{
  doFate(i){const f=this.fp.l[i],gd=this.fp.good;this.fp=null;this.fn=this.t+76800*TIME_SCALE*R(.6,1.4);if(f){f[2](this);this.ev('Takdir '+(gd?'Baik':'Buruk')+': <b>'+f[0]+'</b> — '+f[1])}if(!this.over)this.si=this.fs}
  day(){return Math.floor(this.t/24)%365}
  stamp(){return 'Th'+(Math.floor(this.t/8760)+1)+' H'+(this.day()+1)}
- ev(m){this.hook(m);if(/Genius|Bencana|Wabah melanda|Takdir|Pencapaian|Serangan|Pimpinan|takhta|Pendatang|Peringatan/i.test(m)){this.notes.unshift((/Genius/.test(m)?'⭐':/Bencana|Wabah/.test(m)?'☠️':/Takdir/.test(m)?'🎲':/Serangan/.test(m)?'⚔️':/Pimpinan|takhta/.test(m)?'👑':/Pendatang/.test(m)?'🧳':/Peringatan/.test(m)?'⚠️':'🏆')+' '+this.stamp()+' '+m);this.nn++;if(this.notes.length>80)this.notes.pop()}this.log.unshift(this.stamp()+' '+m);if(this.log.length>60)this.log.pop()}
+ ev(m){this.hook(m);if(/Genius|Bencana|Wabah melanda|Takdir|Pencapaian|Serangan|Pimpinan|takhta|Pendatang|Peringatan|Kontak|Diplomasi/i.test(m)){this.notes.unshift((/Genius/.test(m)?'⭐':/Bencana|Wabah/.test(m)?'☠️':/Takdir/.test(m)?'🎲':/Serangan/.test(m)?'⚔️':/Pimpinan|takhta/.test(m)?'👑':/Pendatang/.test(m)?'🧳':/Peringatan/.test(m)?'⚠️':/Kontak/.test(m)?'🗺️':/Diplomasi/.test(m)?'🤝':'🏆')+' '+this.stamp()+' '+m);this.nn++;if(this.notes.length>80)this.notes.pop()}this.log.unshift(this.stamp()+' '+m);if(this.log.length>60)this.log.pop()}
  capac(){return this.huts.reduce((q,h)=>q+h.cap,0)}
  gr(){return GR[this.season]*({hujan:1.5,panas:.6,salju:0,badai:.5,cerah:1}[this.wx])*(this.nat<.45?.8:1)*(.7+.3*MAP.fe)*(this.boon>0?1.8:1)}
  mv(a,x,y,s){const w=this.wp(a.x,a.y,x,y),dx=w.x-a.x,dy=w.y-a.y,d=Math.hypot(dx,dy),sp=(a.age<5110?70:90)*MOVE_K*(this.wx==='hujan'||this.wx==='salju'?.85:1),st=Math.min(d,sp*s);if(d>2){const nx=a.x+dx/d*st,ny=a.y+dy/d*st;
@@ -482,7 +491,7 @@ class Game extends Phaser.Scene{
   for(let i=0;i<n;i++)for(let j=0;j<n;j++){const a=pf(i,j,1),b=pf(i,j,-1),c=da[i]+Math.min(a,b)+dt[j];if(c<best){best=c;bi=i;bj=j;bd=a<=b?1:-1}}
   if(bi<0)return{x:tx,y:ty,f:fl};if(da[bi]<14){if(bi===bj)return{x:tx,y:ty,f:fl};const q=V[(bi+bd+n)%n];return{x:q.x,y:q.y,f:0}}return{x:V[bi].x,y:V[bi].y,f:0}}
  hit(x1,y1,x2,y2){const f=this.fc;if(!f)return false;const a={x:x1,y:y1},b={x:x2,y:y2},P=f.P,n=P.length;for(let i=0;i<n;i++){const p=P[i],q=P[(i+1)%n];if(p&&q&&p.alive&&q.alive&&xs(a,b,p,q))return true}return false}
- fenceCost(t){return[.4,.4,.5,.15][t]}
+ fenceCost(t){return[.4,.4,.5,.15][t]*td('cost')}
  planFence(){const n=this.ag.length,sh=TRIBES.indexOf(TR)%3,rx=615,ry=435,v=[];
   (sh===0?[[-1,-1],[1,-1],[1,1],[-1,1]]:sh===1?[[-.5,-1],[.5,-1],[1,0],[.5,1],[-.5,1],[-1,0]]:[[-.62,-1],[.62,-1],[1,-.62],[1,.62],[.62,1],[-.62,1],[-1,.62],[-1,-.62]]).forEach(q=>v.push({x:CAMP.x+q[0]*rx,y:CAMP.y+q[1]*ry}));
   const gk=Math.min(4,1+(Math.random()*(1+n/20)|0)),hzE=i=>Math.abs(v[i].y-v[(i+1)%v.length].y)<1,ids=Phaser.Utils.Array.Shuffle(v.map((_,i)=>i).filter(i=>hzE(i)||Math.abs(v[i].x-v[(i+1)%v.length].x)<1)).sort((p,q)=>hzE(q)-hzE(p)).slice(0,gk),gates=[],P=[];
@@ -496,7 +505,7 @@ class Game extends Phaser.Scene{
   else if(--f.rp<=0){dead.forEach(p=>{p.alive=true;p.s.setVisible(true)});f.rp=0;f.isBroken=false;this.ev('Upgrade: pagar desa selesai diperbaiki.')}}
  breakFence(k,soft){const f=this.fc;if(!f||(soft&&f.t>1))return;const al=f.P.filter(p=>p&&p.alive);for(let i=0;i<k&&al.length;i++){const p=al.splice(R(0,al.length)|0,1)[0];p.alive=false;p.s.setVisible(false);this.puff(p.x,p.y,[0xb89a58,0x9a9aa8,0x8a8896,0x5a5a68][f.t])}f.isBroken=true;this.ev('Pagar desa rusak ('+k+' tiang roboh).')}
  puff(x,y,c){for(let i=0;i<5;i++){const q=this.add.rectangle(x,y-8,4,4,c).setDepth(6000);this.tweens.add({targets:q,x:x+R(-24,24),y:y+R(-6,14),alpha:0,duration:700,onComplete:()=>q.destroy()})}}
- pickB(w){const c=[];this.huts.forEach(h=>c.push(['hut',h,h.s]));if(this.fireS)c.push(['fire',0,this.fireS]);if(this.hallS)c.push(['hall',0,this.hallS]);Object.entries(this.bld).forEach(([k,v])=>{if(v&&v.getBounds)c.push([k==='castle'?'castle':'bld',k,v])});this.fields.forEach(q=>c.push(['field',q,q.s]));(this.hs||[]).forEach(q=>c.push(['herd',q,q]));(this.fc?this.fc.gates:[]).forEach(q=>c.push(['gate',q,q.s]));(this.fc?this.fc.gates:[]).forEach(g=>(g.tw||[]).forEach(t=>{if(t.s)c.push(['tower',t,t.s])}));let b=null,bd=1e9;c.forEach(e=>{const q=e[2];if(q&&q.active&&q.getBounds().contains(w.x,w.y)){const d=Math.hypot(q.x-w.x,q.y-w.y);if(d<bd){bd=d;b=e}}});return b}
+ pickB(w){const c=[];this.huts.forEach(h=>c.push(['hut',h,h.s]));if(this.fireS)c.push(['fire',0,this.fireS]);if(this.hallS)c.push(['hall',0,this.hallS]);Object.entries(this.bld).forEach(([k,v])=>{if(v&&v.getBounds)c.push([k==='castle'?'castle':'bld',k,v])});this.fields.forEach(q=>c.push(['field',q,q.s]));(this.hs||[]).forEach(q=>c.push(['herd',q,q]));(this.fc?this.fc.gates:[]).forEach(q=>c.push(['gate',q,q.s]));(this.fc?this.fc.gates:[]).forEach(g=>(g.tw||[]).forEach(t=>{if(t.s)c.push(['tower',t,t.s])}));(this.vil||[]).forEach(v=>{if(v.known)v.sp.forEach(q=>c.push(['village',v,q]))});let b=null,bd=1e9;c.forEach(e=>{const q=e[2];if(q&&q.active&&q.getBounds().contains(w.x,w.y)){const d=Math.hypot(q.x-w.x,q.y-w.y);if(d<bd){bd=d;b=e}}});return b}
  obs(){const o=[];this.huts.forEach(h=>o.push([h.x,h.y,46]));Object.values(this.bld).forEach(v=>{if(v&&v.x!==undefined)o.push([v.x,v.y,v===this.bld.castle?90:58])});this.fields.forEach(q=>o.push([q.x,q.y,26]));if(this.hallS)o.push([this.hallS.x,this.hallS.y,56]);return o}
  fdist(x,y){const v=this.fc.v;let m=1e9;for(let i=0;i<v.length;i++){const a=v[i],b=v[(i+1)%v.length];m=Math.min(m,segd(x,y,a.x,a.y,b.x,b.y))}return m}
  free(x,y,r){const f=this.fc;if(f){if(!pin(f.v,x,y)||this.fdist(x,y)<r+34)return false;if(f.gates.some(g=>Math.hypot(g.x-x,g.y-y)<190+r*.5||segd(x,y,CAMP.x,CAMP.y+30,g.i.x,g.i.y)<48+r*.5))return false}else if(((x-CAMP.x)/330)**2+((y-CAMP.y)/230)**2>1)return false;
@@ -506,7 +515,7 @@ class Game extends Phaser.Scene{
  unStuck(a){const f=this.fc;if(!f)return;for(let i=0;i<30;i++){const e=R(0,6.283),x=cl(CAMP.x+Math.cos(e)*R(1.12,1.5)*f.rx,80,WW-80),y=cl(CAMP.y+Math.sin(e)*R(1.12,1.5)*f.ry,80,WH-80);if(!pin(f.v,x,y)&&this.fdist(x,y)>40&&!river(x,y)){a.x=x;a.y=y;break}}a.isStuck=false;a.stk=0;a.task=null;a.sl=false;if(a.hut){a.hut.occ--;a.hut=null}}
  unstick(a){const f=this.fc;if(!f||!f.gates.length)return;const ia=pin(f.v,a.x,a.y);let g=null,bd=1e9;f.gates.forEach(q=>{const d=Math.hypot(q.x-a.x,q.y-a.y);if(d<bd){bd=d;g=q}});const P=ia?g.i:g.o;a.x=P.x;a.y=P.y;a.stk=0}
  jobs(T,n){const ad=this.ag.filter(a=>a.age>=5110);if(!ad.length)return;const un=Object.keys(JOBS).filter(k=>JOBS[k].ok(this,T,n)),tot=un.reduce((q,k)=>q+JOBS[k].sh,0),cnt={};un.forEach(k=>cnt[k]=0);ad.forEach(a=>{if(cnt[a.job]!==undefined)cnt[a.job]++});
-  const tg=k=>Math.max(1,Math.round(ad.length*JOBS[k].sh/tot)),setJ=(a,k)=>{if(a.sw){a.sw.destroy();a.sw=null}a.sold=k==='warrior'?1:0;a.job=k;const J=JOBS[k],old=a.mhp||100;a.mhp=100*(J.cls==='fighter'?1.5:1);a.hp=Math.min(a.mhp,a.hp*a.mhp/old);a.sw=this.add.text(0,0,J.ic,{fontSize:'10px'}).setOrigin(.5).setDepth(5000);if(a.ov)a.ov.destroy();a.ov=this.add.image(a.x,a.y,'hk','d_i0').setOrigin(.5,SH.hk.fy/SH.hk.ch).setTint(J.col)};
+  const tg=k=>Math.max(1,Math.round(ad.length*JOBS[k].sh/tot)),setJ=(a,k)=>{if(a.sw){a.sw.destroy();a.sw=null}a.sold=k==='warrior'?1:0;a.job=k;const J=JOBS[k],old=a.mhp||100;a.mhp=100*(J.cls==='fighter'?1.5:1)*(k==='warrior'?td('whp'):1)*(J.cls==='villager'?td('vhp'):1);a.hp=Math.min(a.mhp,a.hp*a.mhp/old);a.sw=this.add.text(0,0,J.ic,{fontSize:'10px'}).setOrigin(.5).setDepth(5000);if(a.ov)a.ov.destroy();a.ov=this.add.image(a.x,a.y,'hk','d_i0').setOrigin(.5,SH.hk.fy/SH.hk.ch).setTint(J.col)};
   ad.filter(a=>cnt[a.job]===undefined).forEach(a=>{let b=null,bs=-1;un.forEach(k=>{const v=a.tl[JOBS[k].tal]*(1+Math.max(0,tg(k)-cnt[k]));if(v>bs){bs=v;b=k}});if((a.cad|0)>=15&&cnt.warrior!==undefined){b='warrior';a.xp.war=(a.xp.war||0)+30;a.vet=1}cnt[b]++;setJ(a,b)});
   let m=0;for(const k of un){if(m>=2)break;if(cnt[k]>=tg(k))continue;const c=ad.filter(a=>a.job!==k&&!a.king&&!a.vet&&cnt[a.job]>tg(a.job)).sort((a,b)=>b.tl[JOBS[k].tal]-a.tl[JOBS[k].tal])[0];if(c){cnt[c.job]--;cnt[k]++;setJ(c,k);m++}}this.jobN=cnt;
   const jl=k=>this.ag.filter(a=>a.job===k&&a.age>=5110);this.rel=Math.min(.5,jl('priest').reduce((q,a)=>q+.08*a.tl.faith,0));this.sch=Math.min(.6,jl('scholar').reduce((q,a)=>q+.1*a.tl.mind,0));this.frm=Math.min(.5,jl('farmer').reduce((q,a)=>q+.04*a.tl.farm,0));
@@ -515,7 +524,7 @@ class Game extends Phaser.Scene{
  tv(){return 1-Math.min(.4,Object.keys(this.tech).length*.02)}
  teach(T){const kids=this.ag.filter(a=>a.age<6000),tc=this.ag.filter(a=>a.age>=6000&&a.age<20000);if(!kids.length||!tc.length)return;let sum=0;
   kids.forEach(k=>{const p=[k.mom,k.dad].find(q=>q&&this.ag.includes(q)&&q.age>=6000)||null,t=p||tc.reduce((b,q)=>!b||Math.hypot(q.x-k.x,q.y-k.y)<Math.hypot(b.x-k.x,b.y-k.y)?q:b,null),q=(t.tl.craft+t.tl.hunt+t.tl.farm+t.tl.herd)/4;
-   k.sk=Math.min(1,(k.sk||0)+SIMF*.0012*q*(1+(this.sch||0)*1.5)*(1+(this.edu||0))*(T.school?2:1)*(p?1.3:1)*(k.sch?2.2:1));const bk=Object.keys(t.xp).sort((a,b)=>t.xp[b]-t.xp[a])[0];k.xp[bk]+=.8*(1+(this.edu||0));sum+=k.sk;k.sch=0});
+   k.sk=Math.min(1,(k.sk||0)+SIMF*.0012*q*(1+(this.sch||0)*1.5)*(1+(this.edu||0))*(T.school?2:1)*(p?1.3:1)*(k.sch?2.2:1)*td('edu'));const bk=Object.keys(t.xp).sort((a,b)=>t.xp[b]-t.xp[a])[0];k.xp[bk]+=.8*(1+(this.edu||0));sum+=k.sk;k.sch=0});
   this.edu=Math.min(1,(this.edu||0)+sum/kids.length*.0004*SIMF);const ms=[.25,.5,.75];if(this.edu>=ms[this.em|0]){this.ev('Pencapaian: tradisi mengajar berakar; generasi baru lebih pandai bertahan hidup ('+Math.round(this.edu*100)+'% pengetahuan).');this.em=(this.em|0)+1}}
  makeGround(){if(!CFG.tile&&!Object.keys(TILE_OVERRIDES).length)return this.makeGroundProc();
   const w=WW/2,h=WH/2,cv=document.createElement('canvas');cv.width=w;cv.height=h;const g=cv.getContext('2d');g.imageSmoothingEnabled=false;const M=this.tm=this.tmap(),PR={water:0,sand:1,dirt:2,grass:3,rock:4,snow:5},imgs={},L=MAP.pal.fw||8,tmp=document.createElement('canvas');tmp.width=tmp.height=16;const t=tmp.getContext('2d');
@@ -572,13 +581,13 @@ class Game extends Phaser.Scene{
   this.deer.forEach(d=>{if(d.dead){d.rs-=s;if(d.rs<=0){d.dead=false;d.x=CAMP.x+R(-900,900);d.y=CAMP.y+R(-700,500);if(this.fc&&pin(this.fc.v,d.x,d.y))d.x=CAMP.x+(d.x<CAMP.x?-1:1)*(720+R(0,200));d.s.setVisible(true)}return}
    d.nx-=s;if(d.nx<=0){d.nx=R(2,8);const e=R(0,6.28);d.tx=cl(d.x+Math.cos(e)*R(0,160),80,WW-80);d.ty=cl(d.y+Math.sin(e)*R(0,160),80,WH-80)}
    const dx=d.tx-d.x,dy=d.ty-d.y,l=Math.hypot(dx,dy);if(l>2){const q=Math.min(l,28*MOVE_K*s),nx=d.x+dx/l*q,ny=d.y+dy/l*q;if(!this.hit(d.x,d.y,nx,ny)){d.x=nx;d.y=ny}d.fl=dx<0}});
-  this.rstep(s);this.tshoot(s);this.ag.slice().forEach(a=>this.upd(a,s));
+  this.rstep(s);this.tshoot(s);this.cvStep(s);this.ag.slice().forEach(a=>this.upd(a,s));
  }
  upd(a,s){
   const hr=this.t%24,night=hr>=21||hr<5,kid=a.age<5110;a.walk=false;a.work=false;
   a.age+=s/24*SIMF*(a.sl?.75:1);a.hun=Math.max(0,a.hun-(kid?.9:1.4)*(this.wx==='panas'?1.15:1)*s);
   if(a.sl){a.en=Math.min(100,a.en+(a.shel?11:6)*s);if((a.en>=98||(!night&&a.en>=70))&&!(a.rec&&a.hp<(a.mhp||100)*.8)||(a.rec&&a.hun<35&&this.S.food>=1)){a.sl=false;a.task=null;if(a.hut){a.x=a.hut.x+R(-8,8);a.y=a.hut.y+18;a.hut.occ--;a.hut=null}a.shel=false}}else a.en-=2.2*(this.season===3&&!this.tech.fire?1.2:1)*s;
-  if(a.hun<=0){a.hp-=(kid?1.5:2.2)*s*(1-.3*(a.sk||0))*(1-.5*(this.frm||0))*this.tv();a.why='kelaparan'}else if(a.hp<(a.mhp||100)&&a.hun>40)a.hp=Math.min(a.mhp||100,a.hp+(a.sl?1.4:.3)*(this.tech.med?1.5:1)*(a.hun>70?1.8:1)*(this.wx==='cerah'?1.3:1)*s);
+  if(a.hun<=0){a.hp-=(kid?1.5:2.2)*s*(1-.3*(a.sk||0))*(1-.5*(this.frm||0))*this.tv();a.why='kelaparan'}else if(a.hp<(a.mhp||100)&&a.hun>40)a.hp=Math.min(a.mhp||100,a.hp+(a.sl?1.4:.3)*(this.tech.med?1.5:1)*(a.hun>70?1.8:1)*(this.wx==='cerah'?1.3:1)*td('heal')*s);
   if(a.en<=0){a.en=0;if(a.hun<45){a.hp-=.3*s*(1-.3*(a.sk||0))*this.tv();a.why='kelelahan'}}
   if(a.hp<=0){this.die(a,a.why||'luka');return}
   if(a.sl)return;
@@ -587,7 +596,7 @@ class Game extends Phaser.Scene{
   if(!a.task)this.decide(a,kid,night);const t=a.task;if(!t)return;
   if(t.k==='hunt'){if(t.deer.dead){a.task=null;return}t.x=t.deer.x;t.y=t.deer.y}
   if(t.ph===0){if(this.mv(a,t.x,t.y,s)){t.ph=1;t.left=t.w||0;if(t.k==='sleep'){a.sl=true;a.shel=!!t.hut;a.out=!t.hut;a.task=null}else if(t.k==='eat'){if(this.S.food>=1){this.S.food--;a.hun=Math.min(100,a.hun+35*(this.tech.fire?1.35:1));a.hp=Math.min(a.mhp||100,a.hp+6)}a.task=null}}}
-  else if(t.ph===1){if(t.k!=='idle'&&t.k!=='study'&&t.k!=='pray'&&t.k!=='learn')a.work=true;t.left-=s;if(t.left<=0)this.resolve(a,t)}
+  else if(t.ph===1){if(t.k!=='idle'&&t.k!=='study'&&t.k!=='pray'&&t.k!=='learn')a.work=true;t.left-=s*(t.k==='farm'&&a.job==='farmer'?td('fspd'):1);if(t.left<=0)this.resolve(a,t)}
   else if(t.ph===2&&this.mv(a,t.x,t.y,s)){this.S[a.ct]+=a.cn;a.cn=0;a.task=null}
  }
  decide(a,kid,night){
@@ -619,16 +628,16 @@ class Game extends Phaser.Scene{
   const T=this.tech,S=this.S,tool=(T.tools?1.5:1)*(T.smelt&&S.iron>0?1.2:1);a.task=null;if(t.k==='learn'){a.sch=1;a.xp.mind=(a.xp.mind||0)+.6;return}if(t.k==='train'){a.cad=(a.cad|0)+1;a.xp.war=(a.xp.war||0)+1;return}
   const ret=(ty,n)=>{if(n>0){a.ct=ty;a.cn=n;a.task={k:'ret',ph:2,x:a.hx,y:a.hy}}};
   if(t.k!=='idle'&&t.k!=='wander'&&t.k!=='learn'&&t.k!=='train'&&Math.random()<(t.k==='hunt'?.04:.01)*(this.wx==='badai'?3:1)){a.hp-=28;a.why=t.k==='hunt'?'perburuan':'kecelakaan'}
-  const mCraft=.6+.4*E(a,'craft');
+  const mCraft=(.6+.4*E(a,'craft'))*td('craft');
   if(t.k==='forage'){const n=Math.min(t.res.b,3);t.res.b-=n;this.st.food+=n;ret('food',n*1.7)}
-  else if(t.k==='wood'){const n=2*tool*mCraft;t.res.w-=2;this.st.wood+=n;a.xp.craft++;if(t.res.w<=0){t.res.s.destroy();this.trees=this.trees.filter(q=>q!==t.res)}ret('wood',n)}
-  else if(t.k==='stone'){const n=2*tool*mCraft;t.res.w-=2;this.st.stone+=n;a.xp.craft++;if(t.res.w<=0){t.res.s.destroy();this.rocks=this.rocks.filter(q=>q!==t.res)}ret('stone',n)}
+  else if(t.k==='wood'){const n=2*tool*mCraft*(a.job==='forager'?td('gath'):1);t.res.w-=2;this.st.wood+=n;a.xp.craft++;if(t.res.w<=0){t.res.s.destroy();this.trees=this.trees.filter(q=>q!==t.res)}ret('wood',n)}
+  else if(t.k==='stone'){const n=2*tool*mCraft*(a.job==='forager'?td('gath'):1);t.res.w-=2;this.st.stone+=n;a.xp.craft++;if(t.res.w<=0){t.res.s.destroy();this.rocks=this.rocks.filter(q=>q!==t.res)}ret('stone',n)}
   else if(t.k==='hunt'){const d=t.deer;a.xp.hunt++;if(!d.dead){if(Math.random()<Math.min(.9,(T.tools?.7:.4)*(T.spear?1.3:1)*(d.kd>=2?.6:1)*(a.sold?1.25:1)*td('hunt')*(.6+.4*E(a,'hunt')))){d.dead=true;d.rs=48*(1+this.kills/120);d.s.setVisible(false);this.kills++;const fy=[6,9,16,5][d.kd|0];this.st.food+=fy;S.hide+=d.kd>=2?3:1;if(d.kd>=2&&Math.random()<(a.sold?.15:.35)){a.hp-=40;a.why='diterkam '+(d.kd===3?'serigala':'beruang')}if(T.herd&&d.kd<2&&Math.random()<(d.kd?.5:.3)){this.herd++;this.ev('Anak '+(d.kd?'celeng':'rusa')+' dijinakkan. Ternak: '+this.herd+'.')}else ret('food',fy)}else{d.tx=d.x+R(-300,300);d.ty=d.y+R(-300,300);d.nx=4}}}
   else if(t.k==='build'){const big=T.house,c=big?8:6;if(S.wood>=c){S.wood-=c;const s=big?put(this,'house','house',t.x,t.y):put(this,'props','tent',t.x,t.y);s.setDepth(t.y);this.huts.push({x:t.x,y:t.y,occ:0,s,cap:big?6:4});a.xp.craft++;this.ev((big?'Rumah':'Gubuk')+' ke-'+this.huts.length+' selesai dibangun.')}}
   else if(t.k==='farm'){a.xp.farm++;if(t.nf){if(this.fields.some(q=>Math.hypot(q.x-t.x,q.y-t.y)<(T.irrig?24:48))||(!T.irrig&&!this.free(t.x,t.y,24)))return;this.clear(t.x,t.y,20);const up=T.irrig?1:0,s=put(this,up?'farm':'crops',up?'p1':'c1',t.x,t.y).setDepth(t.y-5);this.fields.push({x:t.x,y:t.y,st:1,g:0,s,age:0,up})}else{const f=t.f;f.busy=false;if(f.st===3){f.st=0;f.age=0;this.soil=Math.max(.5,(this.soil||1)-.015);if(Math.random()<.06+.1*E(a,'farm')+(f.up?.08:0)+(this.tani?.1:0)){if(!(this.imm>0))this.ev('Panen berkualitas super! Gizi warga membaik dan lebih tahan wabah.');this.imm=Math.min(120,(this.imm|0)+25)}ret('food',(4+3*E(a,'farm'))*td('farm')*MAP.fe*(this.tani?1.3:1)*(f.up?1.4:1)*(this.soil||1)*(1+(this.frm||0)))}else if(f.st===0){f.st=1;f.g=0}}}
   else if(t.k==='study'){a.xp.mind++;this.K+=.2*a.tl.mind*SIMF}else if(t.k==='pray'){a.xp.faith++}else if(t.k==='patrol'){a.xp.war++}
   else if(t.k==='fish'){a.xp.hunt++;const n=Math.round((2+2*E(a,'hunt'))*(T.tools?1:.6));this.st.food+=n;ret('food',n)}
-  else if(t.k==='mine'){a.xp.craft++;const n=Math.round((3+2*E(a,'craft'))*tool);S.ore=(S.ore||0)+n;S.stone+=1;ret('stone',n);if(Math.random()<.012*(1-.4*(a.sk||0))*this.tv()){a.hp-=30;a.why='longsor tambang'}}
+  else if(t.k==='mine'){a.xp.craft++;const n=Math.round((3+2*E(a,'craft'))*tool*td('ore'));S.ore=(S.ore||0)+n;S.stone+=1;ret('stone',n);if(Math.random()<.012*(1-.4*(a.sk||0))*this.tv()){a.hp-=30;a.why='longsor tambang'}}
   else if(t.k==='craft'){a.xp.craft++;if(T.smelt&&this.bld.mine&&S.ore>=2&&S.wood>=1){S.ore-=2;S.wood-=1;S.iron+=mCraft>1?2:1}else if(T.smelt&&!this.bld.mine&&S.stone>=3&&S.wood>=2){S.stone-=3;S.wood-=2;S.iron+=mCraft>1?2:1}else if(T.cloth&&S.hide>=2){S.hide-=2;S.cloth++}else if(T.pot&&S.wood>=4){S.wood-=3;S.goods++}}
   if(t.f)t.f.busy=false;
  }
@@ -675,7 +684,7 @@ class Game extends Phaser.Scene{
   if(Math.random()<.004&&S.food>10){this.ev('Tikus menggerogoti lumbung! Separuh pangan hilang.');S.food*=.55}
   S.wood*=this.wx==='hujan'||this.wx==='badai'?.97:.995;S.iron*=this.wx==='hujan'?.985:.998;S.hide*=this.season===1?.97:.995;S.cloth*=.997;
   if(Math.random()<.01&&S.wood>20){S.wood*=.6;this.ev('Tumpukan kayu lapuk dimakan rayap dan hujan.')}
-  if(T.trade){const nd=n*3+20;[['wood',1],['stone',1.2],['cloth',2.5],['goods',3]].forEach(([k,b])=>{const sv=S[k]||0,sup=sv-nd*(k==='goods'?.3:1);if(sup>0&&S.food<n*4){const q=Math.min(sup,25),p=b*cl(nd/(sv+1),.5,2)*this.tradeAvg;S[k]-=q;S.food+=q*p*.9;this.mk=(this.mk||0)+q*p*.9}});
+  if(T.trade){const nd=n*3+20;[['wood',1],['stone',1.2],['cloth',2.5],['goods',3]].forEach(([k,b])=>{const sv=S[k]||0,sup=sv-nd*(k==='goods'?.3:1);if(sup>0&&S.food<n*4){const q=Math.min(sup,25),p=b*cl(nd/(sv+1),.5,2)*this.tradeAvg*td('trade');S[k]-=q;S.food+=q*p*.9;this.mk=(this.mk||0)+q*p*.9}});
    if(S.food>n*9&&S.wood<n*2){S.food-=n*2;S.wood+=n*1.6;this.mk=(this.mk||0)+n*2}
    if(this.mk>25){this.ev('Pasar: dagang menukar barang senilai '+Math.round(this.mk)+' porsi (harga ikut pasokan & permintaan).');this.mk=0}}
   /* ladang */
@@ -694,7 +703,7 @@ class Game extends Phaser.Scene{
   if(Math.random()<.0004*(1+n/80)){this.ev('Wabah melanda desa!');this.mass('wabah',Math.max(1,Math.round(n*R(.08,.22))))}
   if(Math.random()<.0003){this.ev('Bencana alam ('+pick(['banjir','longsor','badai petir'])+') menimpa desa!');this.mass('bencana alam',Math.max(1,Math.round(n*R(.03,.1))))}
   /* kelahiran & jenius (tiap ~10 th, lebih mungkin setelah krisis) */
-  if(!this.gP&&Math.random()<(1/3650)*(1+(this.gCr>0?3:0)+(n>100?1:0)))this.gP=true;
+  if(!this.gP&&Math.random()<(1/3650)*td('gen')*(1+(this.gCr>0?3:0)+(n>100?1:0)))this.gP=true;
   const sg=this.ag.filter(a=>!a.sp&&a.age>5110);sg.filter(a=>a.sex==='f').forEach(f=>{const mm=sg.find(x=>x.sex==='m'&&!x.sp&&Math.abs(x.age-f.age)<6000);if(mm&&Math.random()<.1){f.sp=mm;mm.sp=f}});
   const comp=1+Math.min(1,Math.max(0,this.dead-this.born)/Math.max(8,n)),cap=Math.min(400,CFG.max),m=this.ag.filter(a=>a.sex==='m'&&a.age>5110).length;
   if(m)this.ag.filter(a=>a.sex==='f'&&a.age>5110&&a.age<15500).forEach(f=>{if(f.preg>0){if(--f.preg===0){this.birth(f);if(Math.random()<.04)this.birth(f)}return}
@@ -707,12 +716,47 @@ class Game extends Phaser.Scene{
  arrive(k,msg){const e=R(0,6.283),rr=this.fc?R(1.25,1.6):R(560,760),p=lp(e,this.fc?this.fc.rx*rr:rr,this.fc?this.fc.ry*rr:rr*.7);for(let i=0;i<k;i++){const a=this.mkAgent(Math.random()<.5?'m':'f',R(5300,12500),cl(p.x+R(-40,40),90,WW-90),cl(p.y+R(-40,40),90,WH-90));if(a)a.sk=.25}this.ev(msg)}
  topDeaths(){const e=Object.entries(this.ds||{}).sort((a,b)=>b[1]-a[1]).slice(0,3);return e.length?e.map(x=>x[0]+' '+x[1]).join(', '):'-'}
  dbgUpd(){const e=document.getElementById('dbg'),n=this.ag.length,ad=this.ag.filter(a=>a.age>=5110),pr=this.ag.filter(a=>a.preg>0).length,sp=ad.filter(a=>a.sp).length/2,top=o=>Object.entries(o||{}).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>x[0]+' '+x[1]).join(' · ')||'-';
-  e.innerHTML='<span class="tag">🐞 Debug (F3)</span><div>Zaman '+(this.eraI()+1)+'/'+ERA.length+' · '+ERA[this.eraI()]+'<br>'+(this.eraNeed()||'Zaman puncak tercapai. ')+'<br>K '+Math.round(this.K)+' (+'+(this.kd||0).toFixed(2)+'/hari) · teknologi '+Object.keys(this.tech).length+'/'+TECH.length+'<br>Penduduk '+n+' (dewasa '+ad.length+' · anak '+(n-ad.length)+') · pasangan '+Math.floor(sp)+' · hamil '+pr+'<br>Lahir '+this.born+' / Wafat '+this.dead+' · kapasitas rumah '+this.capac()+'<br>Pangan '+Math.round(this.S.food)+' · kayu '+Math.round(this.S.wood)+' · batu '+Math.round(this.S.stone)+'<br>Watch Tower '+(this.fc?this.fc.gates.flatMap(g=>g.tw||[]).filter(t=>t.done).length+'/'+this.fc.gates.flatMap(g=>g.tw||[]).length:'-')+' · kill '+(this.towerKills|0)+' · Ketua di desa '+(this.kingBonus()?'ya':'tidak')+'<br>Lahan tani '+this.fields.filter(f=>f.up).length+'/'+this.fields.length+' · Silo '+(this.bld.silo?'✔':'✖')+' · Tambang '+(this.bld.mine?'✔':this.mineNo?'tidak ada batu':'✖')+' · Bijih '+Math.floor(this.S.ore||0)+' · Kadet '+this.ag.filter(a=>a.age<5110&&(a.cad|0)>0).length+'<br>Aset peta: tree '+(TXK.tree?'✔':'✖')+' · bush '+(TXK.bush?'✔':'✖')+'<br>Sebab mati: '+top(this.ds)+'<br>Job mati: '+top(this.dj)+'</div>'}
+  e.innerHTML='<span class="tag">🐞 Debug (F3)</span><div>Zaman '+(this.eraI()+1)+'/'+ERA.length+' · '+ERA[this.eraI()]+'<br>'+(this.eraNeed()||'Zaman puncak tercapai. ')+'<br>K '+Math.round(this.K)+' (+'+(this.kd||0).toFixed(2)+'/hari) · teknologi '+Object.keys(this.tech).length+'/'+TECH.length+'<br>Penduduk '+n+' (dewasa '+ad.length+' · anak '+(n-ad.length)+') · pasangan '+Math.floor(sp)+' · hamil '+pr+'<br>Lahir '+this.born+' / Wafat '+this.dead+' · kapasitas rumah '+this.capac()+'<br>Pangan '+Math.round(this.S.food)+' · kayu '+Math.round(this.S.wood)+' · batu '+Math.round(this.S.stone)+'<br>Watch Tower '+(this.fc?this.fc.gates.flatMap(g=>g.tw||[]).filter(t=>t.done).length+'/'+this.fc.gates.flatMap(g=>g.tw||[]).length:'-')+' · kill '+(this.towerKills|0)+' · Ketua di desa '+(this.kingBonus()?'ya':'tidak')+'<br>Lahan tani '+this.fields.filter(f=>f.up).length+'/'+this.fields.length+' · Silo '+(this.bld.silo?'✔':'✖')+' · Tambang '+(this.bld.mine?'✔':this.mineNo?'tidak ada batu':'✖')+' · Bijih '+Math.floor(this.S.ore||0)+' · Kadet '+this.ag.filter(a=>a.age<5110&&(a.cad|0)>0).length+'<br>Desa: '+(this.vil||[]).map(v=>(v.known?'':'?')+v.name.split(' ')[0]+' '+Math.round(v.att)+'/'+v.str.toFixed(0)+(v.ally?'🤝':'')).join(' · ')+'<br>Aset peta: tree '+(TXK.tree?'✔':'✖')+' · bush '+(TXK.bush?'✔':'✖')+'<br>Sebab mati: '+top(this.ds)+'<br>Job mati: '+top(this.dj)+'</div>'}
+ initVillages(){const NM1=['Batu','Lembah','Akar','Pasir','Tebing','Sungai','Hutan','Bukit','Karang','Embun'],NM2=['Karang','Senja','Hitam','Emas','Merah','Perak','Tinggi','Sunyi','Angin','Api'],SY=['ka','ro','mi','tu','sa','ne','lo','da','ri','bu','ha','ze'],TR2=Phaser.Utils.Array.Shuffle(TRIBES.filter(t=>t!==TR).slice()),SPC=['besi','pangan','kulit','batu','bijih','kriya'],V=[],cnt=2+((Math.random()*3)|0),a0=R(0,6.28),used=new Set();
+  for(let i=0;i<cnt;i++){let p=null;for(let t=0;t<200&&!p;t++){const w2=t>=70,a=a0+i/cnt*6.283+R(-.5-(w2?1:0),.5+(w2?1:0)),x=cl(CAMP.x+Math.cos(a)*(w2?R(900,1500):R(1100,1450)),240,WW-240),y=cl(CAMP.y+Math.sin(a)*(w2?R(650,1050):R(750,1000)),240,WH-240);if((Math.abs(x-CAMP.x)>720||Math.abs(y-CAMP.y)>560)&&Math.hypot(x-CAMP.x-672,y-CAMP.y-200)>300&&wdist(x,y)>70&&elev(x,y)<(MAP.rl||.42)-(w2?.01:.04)&&V.every(v=>Math.hypot(v.x-x,v.y-y)>(w2?520:650)))p={x,y}}
+   if(!p)continue;let nm;do{nm=pick(NM1)+' '+pick(NM2)}while(used.has(nm));used.add(nm);const tr=pick(['dagang','dagang','perang','perang','damai','damai']),t2=TR2[i%TR2.length],w=pick(SY)+pick(SY)+pick(['n','r','k','m','']),att=tr==='dagang'?R(-5,25):tr==='perang'?R(-45,-15):R(10,40),str=tr==='perang'?R(7,11):tr==='dagang'?R(4,7):R(3,6);
+   V.push({id:i,name:nm,leader:w[0].toUpperCase()+w.slice(1),trait:tr,col:t2.m,tint:mixW(t2.m,.45),att,str,spec:pick(SPC),x:p.x,y:p.y,known:0,ally:0,trades:0,rc:0,tc:0,ac:0,sp:[]})}
+  this.vil=V}
+ vRel(v){const a=v.att,r=v.ally?'sekutu':a>=25?'bersahabat':a>-25?'netral':a>-50?'tegang':'musuh';if(v.ic)v.ic.setText(v.ally?'🤝':a>=25?'💱':a>-25?'🏳️':a>-50?'⚠️':'⚔️');return r}
+ reveal(v){v.known=1;const x=v.x,y=v.y,off=[[-70,0],[70,0],[-70,64],[70,64],[0,-64]],fr=['house','stone','house','stone','hall'];
+  off.forEach((o,i)=>{const q=put(this,'house',fr[i],x+o[0],y+o[1]).setDepth(y+o[1]).setTint(v.tint);if(i===4)q.setScale(SC()*1.3);v.sp.push(q)});
+  v.sp.push(put(this,'props','camp0',x,y+24).setDepth(y+24));v.gr=this.add.graphics().setDepth(y-80);v.gr.fillStyle(0x4a2d16,1);v.gr.fillRect(x-1,y-110,3,56);v.gr.fillStyle(v.col,1);v.gr.fillTriangle(x+2,y-110,x+34,y-100,x+2,y-88);
+  v.lab=this.add.text(x,y-124,'Desa '+v.name,{fontFamily:'Cinzel,serif',fontSize:'15px',color:'#f0e2c0',stroke:'#1a0f05',strokeThickness:4}).setOrigin(.5).setDepth(5000);v.ic=this.add.text(x,y-146,'',{fontSize:'18px'}).setOrigin(.5).setDepth(5000);this.vRel(v);
+  const dx=x-CAMP.x,dy=y-CAMP.y,dir=Math.abs(dx)>Math.abs(dy)*1.6?(dx>0?'timur':'barat'):Math.abs(dy)>Math.abs(dx)*1.6?(dy>0?'selatan':'utara'):(dy>0?(dx>0?'tenggara':'barat daya'):(dx>0?'timur laut':'barat laut'));
+  this.ev('Kontak: Desa '+v.name+' ditemukan di arah '+dir+' (pemimpin '+v.leader+', '+TRL[v.trait]+').')}
+ allyPow(){return Math.min(.16,(this.vil||[]).filter(v=>v.ally&&v.known).length*.08)}
+ villageStep(T,S,n){const V=this.vil;if(!V||!V.length)return;const ei=this.eraI();V.forEach(v=>{v.str=Math.min(30,v.str+.004*(1+ei*.4))});
+  if(ei>=5&&n>=15&&(!this.lc||this.t-this.lc>5760)&&Math.random()<.02){const u=V.filter(v=>!v.known).sort((a,b)=>Math.hypot(a.x-CAMP.x,a.y-CAMP.y)-Math.hypot(b.x-CAMP.x,b.y-CAMP.y))[0];if(u){this.lc=this.t;this.reveal(u)}}
+  V.filter(v=>v.known).forEach(v=>{const p=v.trait,dp=td('dip');if(v.ally)v.att=Math.min(90,v.att+.25*dp);else if(p==='perang')v.att+=(v.att>-45?-.12:.04);else if(p==='damai'&&v.att<40)v.att+=.1*dp;else if(p==='dagang'&&v.trades>0&&v.att<35)v.att+=.06*dp;
+   if(!v.ct||this.t-v.ct>720){v.ct=this.t;v.att=cl(v.att+R(-6,6),-100,100)}
+   if(v.ally&&v.att<10){v.ally=0;this.ev('Diplomasi: aliansi dengan Desa '+v.name+' bubar karena hubungan memburuk.')}
+   if(v.att>=-10&&!this.raid&&this.t>=v.tc&&Math.random()<.01*(1+(v.ally?1:0)+(v.att>40?.5:0))){v.tc=this.t+2880;this.spawnCaravan(v)}
+   if(!v.ally&&v.att>=45&&!this.dp&&!this.fp&&this.t>=v.ac&&V.filter(q=>q.ally).length<2&&Math.random()<.03)this.dipOffer(v);
+   if(v.att<=-30&&!this.raid&&n>=12&&this.t>=v.rc&&this.t>=(this.lrt||0)&&Math.random()<.003*(1+(-v.att-30)/40)*(v.str/8)){v.rc=this.t+6000;this.lrt=this.t+3600;this.spawnRaid(v)}
+   this.vRel(v)})}
+ spawnCaravan(v){const k=2+((Math.random()*2)|0),c={v,ph:0,w:0,l:[]};for(let i=0;i<k;i++){const key=i===0?'hero_m':'hero_f'+(Math.random()*3|0),q=put(this,key,'s_i0',v.x+(i-1)*14,v.y+30).setTint(v.tint).setDepth(v.y+30);c.l.push({s:q,x:q.x,y:q.y,ic:i===0?this.add.text(q.x,q.y-34,'💱',{fontSize:'14px'}).setOrigin(.5).setDepth(5000):null})}(this.cv=this.cv||[]).push(c);this.ev('Kafilah dagang dari Desa '+v.name+' terlihat menuju desa.')}
+ cvStep(s){const L=this.cv;if(!L||!L.length)return;for(let ci=L.length-1;ci>=0;ci--){const c=L[ci],m=this.bld.market,tx=m?m.x:CAMP.x,ty=m?m.y+30:CAMP.y+60;let done=0;
+   c.l.forEach((o,i)=>{const gx=c.ph===2?c.v.x+(i-1)*14:tx+(i-1)*18,gy=c.ph===2?c.v.y+30:ty,w=this.wp(o.x,o.y,gx,gy),dx=w.x-o.x,dy=w.y-o.y,d=Math.hypot(dx,dy),st=Math.min(d,60*MOVE_K*s),k=Math.floor(this.t*3)%4,fin=w.f===1&&d<=3;
+    if(c.ph===1){o.s.setFrame('d_i0')}else if(fin)done++;else{const nx=o.x+dx/d*st,ny=o.y+dy/d*st;if(!this.hit(o.x,o.y,nx,ny)){o.x=nx;o.y=ny}o.s.setFrame(Math.abs(dy)>Math.abs(dx)?(dy>0?'d_w':'u_w')+k:'s_w'+k).setFlipX(dx<0)}
+    o.s.setPosition(o.x,o.y).setDepth(o.y);if(o.ic)o.ic.setPosition(o.x,o.y-34)});
+   if(c.ph===0&&done===c.l.length){c.ph=1;c.w=6;this.tradeDone(c)}else if(c.ph===1){c.w-=s;if(c.w<=0)c.ph=2}else if(c.ph===2&&done===c.l.length){c.l.forEach(o=>{o.s.destroy();if(o.ic)o.ic.destroy()});L.splice(ci,1)}}}
+ tradeDone(c){const v=c.v,S=this.S,key={besi:'iron',pangan:'food',kulit:'hide',batu:'stone',bijih:'ore',kriya:'goods'}[v.spec],amt=Math.round(R(8,16)*(v.ally?1.4:1)*td('trade'));S[key]=(S[key]||0)+amt;const give=Math.min(S.goods|0,8);if(give>0){S.goods-=give;S.food+=give*1.5}v.trades=(v.trades|0)+1;v.att=Math.min(100,v.att+6*td('dip'));this.ev('Dagang: kafilah Desa '+v.name+' tiba; +'+amt+' '+v.spec+(give?', menukar '+give+' barang crafting':'')+'.')}
+ dipOffer(v){v.ac=this.t+7200;this.dp=1;this.dps=this.si>0?1:0;this.si=0;showDip(this,v)}
+ dipDone(v,a){this.dp=0;if(a){v.ally=1;v.att=Math.max(v.att,60);this.ev('Diplomasi: aliansi dengan Desa '+v.name+' terbentuk!')}else v.att-=8;this.vRel(v);if(!this.over)this.si=this.dps}
+ raidEnd(r,win){const v=r.v;if(!v)return;if(win){v.str=Math.max(3,v.str-1.5);v.att=Math.max(-100,v.att-4)}else{v.str=Math.min(30,v.str+.8);v.att=Math.min(100,v.att+2)}}
+ spawnRaid(v){const T=this.tech,n=this.ag.length,e=R(0,6.28),sp0=v?{x:v.x,y:v.y}:lp(e,760,600),sx=sp0.x,sy=sp0.y,k=v?Math.min(12,2+Math.round(v.str/3)):Math.min(10,3+Math.floor(n/10));
+  this.raid={ph:0,sx,sy,l:[],v:v||null};for(let i=0;i<k;i++){const q=put(this,'hero_r','s_i0',sx+R(-30,30),sy+R(-20,20)).setTint(v?v.tint:pick([0xffffff,0xcce0ff,0xffd8b0]));this.raid.l.push({s:q,x:q.x,y:q.y,pw:R(.7,1.4)*(T.smelt?1.4:1)*(v?Math.max(.8,v.str/8):1),hp:3,ic:this.mkRaidIcon(q.x,q.y)})}
+  const ld=this.raid.l[0];ld.hp=6;ld.s.setScale(SC()*1.35);ld.cr=this.add.text(0,0,'♛',{fontSize:'14px',color:'#ff6a3a',stroke:'#000',strokeThickness:3}).setOrigin(.5).setDepth(5000);this.ev('Serangan: pasukan pengembara asing terlihat mendekat'+(v?' dari Desa '+v.name:' dari kejauhan')+'!')}
  econStep(T,S){const B=this.bld;
   if(T.irrig){const f=this.fields.find(f=>!f.up&&f.s&&f.s.active);if(f&&S.wood>=1){S.wood-=1;f.up=1;f.s.setTexture('farm','p'+f.st).setOrigin(.5,SH.farm.fy/SH.farm.ch);if(!this.fup){this.fup=1;this.ev('Upgrade: plant box ditingkatkan menjadi lahan tani (1 per hari).')}}}
-  if(T.irrig&&!B.silo&&S.wood>=14&&S.stone>=6&&this.jobN&&this.jobN.farmer>0){S.wood-=14;S.stone-=6;const x=CAMP.x+672,y=CAMP.y+200;B.silo=put(this,'bld','bk_silo',x,y).setDepth(y);this.clear(x,y,40);this.ev('Upgrade: Farm Silo berdiri di area lahan tani.')}
-  if(T.mining&&!B.mine&&!this.mineNo&&S.wood>=12&&S.stone>=10&&this.jobN&&this.jobN.forager>0){const p=this.mineSite();if(!p){this.mineNo=1;this.ev('Pertambangan: tidak ada lereng berbatu di dekat desa; besi tetap dibuat dari batu dan kayu.')}else{S.wood-=12;S.stone-=10;B.mine=put(this,'bld','bk_mine',p.x,p.y).setDepth(p.y);this.clear(p.x,p.y,40);this.ev('Upgrade: tambang dibuka di lereng berbatu (Forager menggali bijih).')}}}
- mineSite(){const M=this.tmx=this.tmx||this.tmap();let b=null,bd=1e9;for(let j=0;j<75;j++)for(let i=0;i<100;i++){if(M[j][i]!=='rock')continue;const x=i*32+16,y=j*32+16,dx=Math.abs(x-CAMP.x),dy=Math.abs(y-CAMP.y);if(dx<720&&dy<540)continue;const d=Math.hypot(x-CAMP.x,y-CAMP.y);if(d<bd&&d<1500){bd=d;b={x,y}}}return b}
+  if(T.irrig&&!B.silo&&S.wood>=14*td('cost')&&S.stone>=6*td('cost')&&this.jobN&&this.jobN.farmer>0){S.wood-=14*td('cost');S.stone-=6*td('cost');const x=CAMP.x+672,y=CAMP.y+200;B.silo=put(this,'bld','bk_silo',x,y).setDepth(y);this.clear(x,y,40);this.ev('Upgrade: Farm Silo berdiri di area lahan tani.')}
+  if(T.mining&&!B.mine&&!this.mineNo&&S.wood>=12*td('cost')&&S.stone>=10*td('cost')&&this.jobN&&this.jobN.forager>0){const p=this.mineSite();if(!p){this.mineNo=1;this.ev('Pertambangan: tidak ada lereng berbatu di dekat desa; besi tetap dibuat dari batu dan kayu.')}else{S.wood-=12*td('cost');S.stone-=10*td('cost');B.mine=put(this,'bld','bk_mine',p.x,p.y).setDepth(p.y);this.clear(p.x,p.y,40);this.ev('Upgrade: tambang dibuka di lereng berbatu (Forager menggali bijih).')}}}
+ mineSite(){const M=this.tmx=this.tmx||this.tmap();let b=null,bd=1e9;for(let j=0;j<75;j++)for(let i=0;i<100;i++){if(M[j][i]!=='rock')continue;const x=i*32+16,y=j*32+16,dx=Math.abs(x-CAMP.x),dy=Math.abs(y-CAMP.y);if(dx<720&&dy<540)continue;if(this.vil&&this.vil.some(v=>Math.hypot(v.x-x,v.y-y)<260))continue;const d=Math.hypot(x-CAMP.x,y-CAMP.y);if(d<bd&&d<1500){bd=d;b={x,y}}}return b}
  kingBonus(){const k=this.king;if(!k)return 0;const f=this.fc,inn=f?pin(f.v,k.x,k.y):Math.hypot(k.x-CAMP.x,k.y-CAMP.y)<420;return inn?.1:0}
  towerPow(){let n=0;if(this.fc)this.fc.gates.forEach(g=>(g.tw||[]).forEach(t=>{if(t.done)n++}));return Math.min(.5,n*.06)}
  mkRaidIcon(x,y){const ic=this.add.image(x,y-56,'ico_raid').setScale(.55).setDepth(5000);this.tweens.add({targets:ic,alpha:{from:.55,to:1},duration:550,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});return ic}
@@ -723,7 +767,7 @@ class Game extends Phaser.Scene{
  tshoot(s){const f=this.fc;if(!f)return;const R2=340,en=[];if(this.raid)this.raid.l.forEach(o=>en.push({o,x:o.x,y:o.y}));this.deer.forEach(d=>{if(!d.dead&&d.kd>=2)en.push({d,x:d.x,y:d.y})});
   f.gates.forEach(g=>(g.tw||[]).forEach(t=>{if(!t.done)return;if(!en.length){if(t.ar&&t.ar.frame.name!=='s_i0')t.ar.setFrame('s_i0');return}
    t.cd-=s;if(t.cd>0)return;let b=null,bd=R2;en.forEach(e=>{if(e.dead)return;const dd=Math.hypot(e.x-t.x,e.y-t.y);if(dd<bd){bd=dd;b=e}});if(!b){if(t.ar&&t.ar.frame.name!=='s_i0')t.ar.setFrame('s_i0');return}
-   t.cd=1.5;this.arrow(t,b);if(t.ar)t.ar.setFrame('s_a'+(Math.floor(this.t*6)%3));
+   t.cd=1.5/td('arch');this.arrow(t,b);if(t.ar)t.ar.setFrame('s_a'+(Math.floor(this.t*6)%3));
    if(Math.random()<.7){if(b.o){b.o.hp=(b.o.hp||3)-1;if(b.o.hp<=0){b.dead=1;this.rkill2(b.o)}}else{const d=b.d;d.hp=(d.hp===undefined?(d.kd===2?6:3):d.hp)-1;if(d.hp<=0){b.dead=1;d.dead=true;d.rs=48*(1+this.kills/120);d.s.setVisible(false);this.puff(d.x,d.y,0xff8a2a);d.hp=undefined}}}}))}
  towerStep(S){const f=this.fc;if(!f)return;const kf=x=>x===3?'iron':x===2?'stone':'wood',t=this.fenceTier(),c=this.fenceCost(t);
   f.gates.forEach(g=>{if(g.b&&!g.tw){const o=g.hz?[[-116,0],[116,0]]:[[0,-116],[0,116]];g.tw=o.map(d=>({x:g.x+d[0],y:g.y+d[1],bt:0,done:0,hp:0,mx:0,cd:0,g}))}});
@@ -736,6 +780,9 @@ class Game extends Phaser.Scene{
  killTower(t,why){t.done=0;t.bt=0;t.hp=0;if(t.s){if(t.s.sh)t.s.sh.destroy();t.s.destroy();t.s=null}if(t.ar){t.ar.destroy();t.ar=null}this.puff(t.x,t.y-30,0x9a8a7a);this.ev('Peringatan: Watch Tower runtuh ('+why+'); Archer gugur. Akan dibangun ulang.')}
  hook(m){const sl=()=>{if(this.si>1)this.si=1};
   if(/Era Defining Genius<\/b> lahir/.test(m)){sl();const nm=(m.match(/lahir: ([^(]*)\(/)||[0,''])[1].trim();miniPop('gen','⭐','Jenius Lahir',nm)}
+  else if(/^Kontak:/.test(m)){sl();miniPop('contact','🗺️','Kontak Pertama',m.replace(/^Kontak: /,'').split(' (')[0])}
+  else if(/^Dagang:/.test(m))miniPop('cv'+Math.random(),'💱','Kafilah Dagang',m.replace(/^Dagang: /,''))
+  else if(/^Diplomasi:/.test(m))miniPop('dip'+Math.random(),'🤝','Diplomasi',m.replace(/^Diplomasi: /,''))
   else if(/^Pendatang:/.test(m)){sl();miniPop('imm'+Math.random(),'🧳','Pendatang Tiba','Warga baru bergabung')}
   else if(/Serangan: pasukan pengembara asing terlihat/.test(m)){sl();this._ra=1;miniPop('raid','⚔️','SERANGAN ASING!','Pasukan asing mendekat',{danger:1,sticky:1})}
   else if(/Serangan: pasukan asing dipukul mundur/.test(m))miniPop('raidr','🛡️','Serangan Dipukul Mundur','Prajurit desa menang')
@@ -756,7 +803,7 @@ class Game extends Phaser.Scene{
   this.repairGate()}
  eraNeed(){const e=this.eraI();if(e>=ERA.length-1)return'';return 'Menuju '+ERA[e+1]+': butuh '+ERQ[e+1].filter(k=>!this.tech[k]).map(k=>TECH.find(x=>x[0]===k)[1]).join(', ')+'. '}
  update(time,dt){
-  dt=Math.min(dt,100);if(this._ra&&!this.raid){this._ra=0;clearPop('raid')}if(!this.over&&!this.fp&&!this.ask&&this.t>=this.fn&&this.ag.length>2)this.fate();if(!this.over&&!this.fp&&!this.ask){let gh=Math.min(dt/1000*SPD[this.si]*TIME_SCALE,24);while(gh>0){const s=Math.min(gh,gh>6?2:1);this.step(s);gh-=s}}
+  dt=Math.min(dt,100);if(this._ra&&!this.raid){this._ra=0;clearPop('raid')}if(!this.over&&!this.fp&&!this.ask&&!this.dp&&this.t>=this.fn&&this.ag.length>2)this.fate();if(!this.over&&!this.fp&&!this.ask&&!this.dp){let gh=Math.min(dt/1000*SPD[this.si]*TIME_SCALE,24);while(gh>0){const s=Math.min(gh,gh>6?2:1);this.step(s);gh-=s}}
   const cam=this.cameras.main,k=this.k,v=420*dt/1000/cam.zoom;
   cam.scrollX+=((k.D.isDown||k.RIGHT.isDown)-(k.A.isDown||k.LEFT.isDown))*v;cam.scrollY+=((k.S.isDown||k.DOWN.isDown)-(k.W.isDown||k.UP.isDown))*v;
   const hr=this.t%24,f=Math.cos((hr-13)/12*Math.PI),dark=cl((.25-f)*.55,0,.6),wx=this.wx,se=this.season||0;
@@ -801,7 +848,7 @@ function updUI(g){
 function showFate(g){const e=document.getElementById('fate'),p=g.fp;e.className='bx '+(p.good?'good':'doom');e.style.display='block';
  e.innerHTML='<span class="tag">'+(p.good?'✨ Good Fate':'☠ Doom Fate')+'</span><h3>'+(p.good?'Takdir baik singgah. Anugerah mana yang kau jatuhkan?':'Takdir buruk mengintai. Malapetaka mana yang kau jatuhkan?')+'</h3><div id="fo">'+p.l.map((x,i)=>'<button data-i="'+i+'"><b>'+x[0]+'</b><br><span class="hint">'+x[1]+'</span></button>').join('')+'</div>';
  e.onclick=q=>{const b=q.target.closest('button');if(b){e.style.display='none';g.doFate(+b.dataset.i)}}}
-function endAsk(){const g=GM,e=document.getElementById('fate');if(!g||g.over||g.fp||g.ask)return;g.ask=1;g.fs=g.si;g.si=0;e.className='bx doom';e.style.display='block';
+function endAsk(){const g=GM,e=document.getElementById('fate');if(!g||g.over||g.fp||g.ask||g.dp)return;g.ask=1;g.fs=g.si;g.si=0;e.className='bx doom';e.style.display='block';
  e.innerHTML='<span class="tag">⚠ Akhiri Era?</span><h3>Akhiri permainan sekarang dan lihat ringkasan peradaban?</h3><button id="ey">Ya, akhiri</button> <button id="en">Lanjut main</button>';
  document.getElementById('ey').onclick=()=>{e.style.display='none';g.ask=0;g.finish('Diakhiri lebih awal oleh pemain')};document.getElementById('en').onclick=()=>{e.style.display='none';g.ask=0;g.si=g.fs}}
 function showSplash(){const e=document.getElementById('ld'),t=document.getElementById('ldt');let done=0;
@@ -812,7 +859,7 @@ function showLoad(go){const e=document.getElementById('lg'),t0=Date.now();window
  const iv=setInterval(()=>{const el=Date.now()-t0;if(el>=2800&&window.GAMEREADY||el>15000){clearInterval(iv);e.classList.add('out');setTimeout(()=>e.classList.remove('on'),450)}},100)}
 function showSetup(){
  const s=document.getElementById('setup'),_sd=(s.style.display='block'),op=(a,f)=>a.map((x,i)=>'<option value="'+i+'">'+f(x)+'</option>').join('');
- s.innerHTML='<span class="tag">Permainan Baru</span><h2>Doom Civil</h2><div class="row"><label>Populasi awal (2–60)<input id="iN" type="number" min="2" max="60" value="4"></label><label>Laki-laki (sisanya perempuan)<input id="iM" type="number" min="1" max="59" value="2"></label><label>Target main (tahun game)<input id="iH" type="number" min="5" max="1000" step="5" value="100"></label><label>Target maks populasi (10–400)<input id="iX" type="number" min="10" max="400" value="400"></label><label>Peta<select id="iP">'+op(MAPS,x=>x.n)+'</select><span class="hint" id="dP"></span><canvas id="mp" width="160" height="120" style="width:100%;margin-top:calc(.3*var(--q));image-rendering:pixelated;border:1px solid #8a6a3a"></canvas></label><label>Kecenderungan kemajuan<select id="iT">'+op(TEND,x=>x.n)+'</select><span class="hint" id="dT"></span></label><label>Terrain<select id="iTL"><option value="0">Prosedural (default)</option><option value="1">Tile map (uji coba)</option></select></label></div><div style="text-align:center;margin-top:calc(.8*var(--q))"><button id="go">Mulai Peradaban</button></div><div class="foot">Beta Version '+VERSION+' &copy; 2026 Monsta Media</div>';
+ s.innerHTML='<span class="tag">Permainan Baru</span><h2>Doom Civil</h2><div class="cols"><div class="col"><div class="r2"><label>Populasi awal (2–60)<input id="iN" type="number" min="2" max="60" value="4"></label><label>Laki-laki (sisanya perempuan)<input id="iM" type="number" min="1" max="59" value="2"></label><label>Target main (tahun game)<input id="iH" type="number" min="5" max="1000" step="5" value="100"></label><label>Target maks populasi (10–400)<input id="iX" type="number" min="10" max="400" value="400"></label></div><label>Ciri Khas Masyarakat<select id="iT">'+op(TEND,x=>x.n)+'</select><span class="hint" id="dT"></span></label><label>Terrain<select id="iTL"><option value="0">Prosedural (default)</option><option value="1">Tile map (uji coba)</option></select></label></div><div class="col"><label>Peta<select id="iP">'+op(MAPS,x=>x.n)+'</select><span class="hint" id="dP"></span><canvas id="mp" width="240" height="180" style="width:100%;aspect-ratio:4/3;margin-top:calc(.3*var(--q));image-rendering:pixelated;border:1px solid #8a6a3a"></canvas></label></div></div><div style="text-align:center;margin-top:calc(.8*var(--q))"><button id="go">Mulai Peradaban</button></div><div class="foot">Beta Version '+VERSION+' &copy; 2026 Monsta Media</div>';
  const $=i=>document.getElementById(i),ds=()=>{$('dP').textContent=MAPS[$('iP').value].d;drawMapPrev($('mp'),+$('iP').value);$('dT').textContent=TEND[$('iT').value].d};$('iP').onchange=$('iT').onchange=ds;ds();
  $('go').onclick=()=>{const N=cl(+$('iN').value|0||4,2,60),M=cl(+$('iM').value|0||1,1,N-1);CFG={pop:N,m:M,years:cl(+$('iH').value||100,5,1000),max:cl(+$('iX').value|0||400,10,400),map:+$('iP').value,tend:+$('iT').value,tile:$('iTL')?+$('iTL').value:0};
   MAP=MAPS[CFG.map];TD=TEND[CFG.tend];TR=pick(TRIBES);s.style.display='none';showLoad(()=>new Phaser.Game({type:Phaser.AUTO,parent:'g',width:W,height:H,pixelArt:true,backgroundColor:'#0f1a26',scale:{mode:Phaser.Scale.ENVELOP,autoCenter:Phaser.Scale.CENTER_BOTH},scene:[Game]}))};
