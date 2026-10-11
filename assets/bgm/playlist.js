@@ -1,0 +1,1 @@
+window.BGM_PLAYLIST=['black_forest_a.mp3','lonely_walk_b.mp3','mountains_rest.mp3','townsfolk_b.mp3'];
