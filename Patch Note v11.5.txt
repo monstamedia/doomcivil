@@ -1,0 +1,76 @@
+PATCH NOTE v11.5
+## A. Bentrok dengan v11.49DEV (temuan dari kode)
+
+1. **Umur tampil tidak sinkron dengan ambang dewasa.** Umur yang ditampilkan adalah `age/365/SIMF`, tapi anak dewasa di `age=5110`, yaitu **5,6 tahun tampil**. Pendiri awal berumur 7–11 tahun tampil dan lifespan 42–54 tahun. Jadi "Jenius dewasa di usia 4 tahun" hanya 29% lebih cepat dari normal. Perlu keputusanmu (Q1).
+2. **Bakat maksimal Founding Fathers (FF) vs sistem lama.**
+   - Riset memakai bakat `craft` dan `mind`. Dengan semua bakat 2,0, riset FF jadi ±2× lipat. Itu menabrak penyeimbangan sub-linear di v11.49DEV.
+   - Alokasi job memakai bakat. Kalau semua sama, pembagian hanya dari kuota.
+   - Kelahiran hanya mewarisi bakat **ibu**. Generasi pertama otomatis kuat.
+3. **Jenius lama vs jenius berbasis job.** Kode memakai 4 tipe (`penemu`, `pemimpin`, `tabib`, `jago tani`) dan dipakai di efek riset, pemimpin, surge, dan penarik pendatang. Tipe job (Warrior, Farmer, Scholar, Craftsman, dst.) harus dipetakan ke efek yang ada, bukan menggantinya.
+4. **Obor sudut vs menara sudut.** Menara sudut v11.4R memakai titik pagar (`fc.v`, 2 sudut terjauh) saat hanya ada 1 gerbang. Obor di semua sudut akan bertumpuk di tempat yang sama. Solusinya, obor digeser ke dalam atau menara membawa lentera.
+5. **Perlindungan dingin sudah hampir penuh.** Pengurang dingin saat ini (gubuk 0,35 + api 0,3 + pakaian 0,3) sudah ±0,95. Obor harus kecil dan diberi batas bawah, kalau tidak jadi tidak berarti atau negatif.
+6. **Grass road berbunga vs jalan lama.** Jalan lama digambar per petak (setapak, semi-paved, paved) dari api unggun ke gerbang. Lantai taman harus di bawah jalan dan bangunan, menghindari pijakan bangunan, dan punya varian musim (bunga di musim salju). Belum kuverifikasi apakah tanah berubah warna per musim.
+7. **Desa AI hanyalah titik data.** Atributnya cuma sikap, kekuatan, spesialisasi, dan `ally`. Belum ada populasi, stok, zaman, atau hubungan antar-desa. Seluruh sistem upeti, perang, dan aliansi butuh model desa AI baru (ringan, per hari, tanpa agen).
+8. **Mesin serangan hanya satu.** `this.raid` itu tunggal, dan kafilah berhenti selama ada serangan. Envoy butuh fase "parley" baru di mesin yang sama.
+9. **Aliansi lama sudah ada.** Tawaran lewat popup saat sikap ≥45, bonus +8% per sekutu, dan bubar bila sikap <10. Harus diganti jadi alur envoy, bukan ditambah di atasnya.
+10. **Keputusan oleh kepala desa.** Raja/Ketua baru muncul saat pop ≥12 dan K >150. Sebelum itu pemain yang memutuskan. Itu sesuai aturanmu, tapi RNG "tunduk atau perang" harus punya rumus.
+11. **Upeti 10–20% bisa membunuh desa.** Sudah kita tuning agar tidak kelaparan. Upeti pangan harus dibatasi supaya sisa stok tetap cukup ±7 hari.
+12. **Rambut per desa.** Sprite digambar dari kode dengan satu palet (`C.hair`), jadi varian warna rambut bisa dibuat saat boot. Kalau kamu memakai PNG lewat `SPRITE_OVERRIDES`, warna rambut tidak bisa dibedakan tanpa aset tambahan.
+
+## B. Logika per modul
+
+**Founding Fathers (FF)**
+- Semua populasi awal ditandai FF, bakat semua bidang = 2,0 (batas normal), dengan lencana di popup.
+- **Mampu dan mau semua job:** FF mengisi job yang kosong demi syarat zaman (misal Blacksmith, Scholar, Warrior). Ia tetap dihitung di `jobN` selagi mengisinya dan kembali ke tugas lain ketika ahli sungguhan ada. FF juga melatih anak (xp job naik).
+- **Misi Pendiri** dengan urutan prioritas: (1) pangan stabil, (2) rumah dan kelahiran (pasangan lebih cepat, bonus subur sementara), (3) bahan syarat zaman berikutnya, (4) syarat naik zaman itu sendiri. Lapar dan lelah tetap prioritas teratas. Sebuah indikator "Misi Pendiri" ada di panel zaman.
+- **Kematian FF:** popup emas + SFX alert + penyebab. Bila banyak dalam waktu dekat digabung. Tercatat di backlog, dan ada pengumuman saat FF terakhir wafat.
+
+**Jenius**
+- Lahir dengan bakat job tertentu di nilai maksimal (2,8). Dewasa di usia yang kamu tentukan (Q1).
+- Saat dewasa memicu kelompok pendatang di job yang sama (Warrior diberi label "Tentara bayaran"). Anak berbakat di job itu menua lebih cepat selama jenius itu hidup (usulan ×1,3).
+
+**Obor (Zaman Perunggu)**
+- Tiap sudut pagar mendapat 1 tiang obor, 2 hari per tiang, bahan kayu. Malam hari bercahaya berkedip, perlindungan dingin −0,10 sebanding jumlah tiang selesai.
+
+**Taman desa (Abad Pertengahan)**
+- Rumput berbunga bertahap di seluruh lantai dalam pagar, warna berbeda dari rumput luar. Selesainya bertahap (usul ±4 petak per hari), bukan instan.
+
+**Desa AI**
+- Profil: skala (kecil/sedang/besar), zaman (±1–2 dari pemain), populasi, stok, pasukan, pemimpin dengan sifat, budaya (rambut, kulit, warna pakaian, panji), dan Ciri Khas (memakai 15 Ciri Khas yang ada).
+- Kemajuan disimulasikan abstrak tiap hari dan ada rubber-banding supaya tidak mustahil dikalahkan.
+- Selalu minimal 1 oposisi. Kalau semua desa sudah sekutu, bawahan, atau runtuh, desa pendatang baru muncul setelah ±1 tahun.
+
+**Diplomasi**
+- Envoy membawa pasukan dan panji, berhenti di depan gerbang, lalu **tuntut upeti** atau **ajak aliansi**.
+- Pengambil keputusan: Raja/Ketua lewat RNG, atau popup untuk pemain bila tidak ada.
+- **Tunduk:** upeti dibayar, panji desa pemungut dipasang di semua gerbang, envoy datang tiap tahun.
+- **Tolak:** perang di gerbang memakai mesin serangan yang ada.
+  - **Menang:** sumber daya oposisi berkurang, pemain boleh serang balik, ada jarahan, pasukan tambahan, dan asimilasi warga. Jika desa musuh ditaklukkan, ia membayar upeti tahunan dan panji pemain dipasang di gerbangnya.
+  - **Kalah:** kerugian sama dengan invasi, dan envoy tetap datang tiap tahun.
+- **Aliansi:** diterima = buff "Regenerasi Resource" untuk kedua desa, pasukan sekutu ikut berperang, dan musuh bersama (desa non-sekutu langsung jadi oposisi). Ditolak = rute oposisi. Bila sekutu tumbang, sisa warga dan resource bermigrasi ke pemain. Bila pemain punah, tetap game over.
+
+## C. Rencana kontak agar tidak tumbang di awal
+
+| Tahap | Syarat | Isi |
+|---|---|---|
+| 0 | sebelum Zaman Perunggu | Tidak ada kontak |
+| 1 | Perunggu + pop ≥15 (sudah ada) | Hanya kafilah dagang, lalu setelah ±180 hari ada ajakan aliansi dari desa damai/dagang |
+| 2 | ≥1 tahun setelah kontak **dan** pertahanan siap (gerbang, ≥2 menara, ≥2 Warrior, pop ≥25) | Tuntutan upeti pertama oposisi, ringan (10%), kekuatan 0,6–0,9× pertahanan pemain |
+| 3 | seterusnya | Tuntutan 10–20% tiap tahun, kekuatan 0,8–1,3× |
+
+Pelindung: envoy ditunda 90 hari jika pop <20 atau turun >30% dalam 90 hari. Upeti tahunan dibatasi 20% dan tidak pernah menguras stok pangan di bawah sisa ±7 hari.
+
+## D. Keputusan yang kubutuhkan (default usulanku)
+
+1. **Usia dewasa jenius:** 4 tahun **tampil** (hanya sedikit lebih cepat), atau dewasa pada **setengah** ambang normal (±2,8 tahun tampil)? Perlu juga memutuskan apakah ambang dewasa umum diperbaiki. *Default: setengah ambang.*
+2. Bakat FF **2,0** atau setara jenius **2,8**? *Default: 2,0, dengan riset FF dibatasi ≤1,5×.*
+3. FF = **seluruh populasi awal**, termasuk bila 100 orang? *Default: ya.*
+4. Serang balik: **hitungan abstrak + pasukan berjalan terlihat**, atau pertempuran penuh? *Default: abstrak plus animasi.*
+5. Perang antar-AI (agar sekutu bisa tumbang): **abstrak per blok, dengan notifikasi**? *Default: ya.*
+6. Rambut desa AI: **varian palet dari kode**, OK? Kalau kamu pakai PNG, aku butuh tahu.
+7. Cara keluar dari status bawahan: **tolak envoy berikutnya (perang)** atau **bayar N tahun**? *Default: tolak.*
+8. Misi Pendiri **aktif selama FF masih ada** atau sampai Zaman Perunggu? *Default: sampai Zaman Besi.*
+9. Obor di sudut: **digeser ke dalam** atau **menyatu dengan menara sudut**? *Default: digeser.*
+10. Karena v11.49DEV sudah berjalan 100%, bagi menjadi **3 build**: v11.50 (FF, jenius, obor, taman), v11.51 (model desa AI, rambut, panji), v11.52 (diplomasi, upeti, perang, aliansi)? Jauh lebih aman dites. *Default: ya.*
+
+Balas saja "setuju semua default" atau tulis nomor yang ingin kamu ubah.
