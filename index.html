@@ -93,12 +93,60 @@ input,select{-webkit-user-select:text;user-select:text;touch-action:auto}#setup,
 .en.ok .ei{background:#58a050;border-color:#2e6a2a;color:#fff}.en.pr .ei{background:#e8c24a;border-color:#a8781a}
 .en.ok .et{opacity:.6}.en.ok .et{text-decoration:line-through}.et{flex:1}.et small{display:block;font-weight:400;opacity:.8}
 .epb{height:calc(.4*var(--q));background:#d8c28a;border-radius:2px;margin-top:calc(.15*var(--q));overflow:hidden}.epb i{display:block;height:100%;background:#c8962a}
+
+/* ===== v11.511 ===== */
+#ld{background:#1c1c20!important}#ld .orn{display:none}#ldlogo{display:flex;justify-content:center;align-items:center}
+#ldimg{max-width:min(86vw,960px);max-height:58vh;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 0 26px rgba(0,0,0,.65))}
+#ld .ldsub{letter-spacing:.38em;font-size:clamp(10px,1.7vmin,19px);color:#c9b48a;text-transform:uppercase;margin-top:2.6vmin;text-align:center}
+#ldp{font-size:clamp(10px,1.5vmin,17px);letter-spacing:.2em;color:#e0b860;margin-top:4.5vmin;text-align:center;animation:wzp 1.6s ease-in-out infinite}
+@keyframes wzp{0%,100%{opacity:.35}50%{opacity:1}}
+#wz{position:absolute;inset:0;z-index:29;display:none;flex-direction:column;align-items:center;background:#1c1c20;color:#f0d9a0;padding:2.4vmin 3vw 2.6vmin;box-sizing:border-box;font-family:Cinzel,"Cormorant Garamond",Georgia,serif;pointer-events:auto;user-select:none;-webkit-user-select:none}
+#wzh{display:flex;flex-direction:column;align-items:center;gap:.8vmin}.wzlogo{max-height:11vh;max-width:40vw;width:auto;height:auto;object-fit:contain}.lgtxt{font-weight:900;letter-spacing:.3em;color:#e0b860;font-size:clamp(16px,3.4vmin,36px)}
+.wzs{font-size:clamp(8px,1.3vmin,14px);letter-spacing:.34em;color:#9a8760;text-transform:uppercase}
+#wzt{margin-top:2.2vmin;font-size:clamp(16px,3.2vmin,34px);font-weight:700;letter-spacing:.06em;color:#f0d9a0;text-align:center}
+#wzsub{margin-top:.6vmin;font-size:clamp(10px,1.7vmin,18px);color:#a8987a;text-align:center;max-width:80vw}
+#wzb{position:relative;width:100%;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;margin:1.6vmin 0}
+#wzd{display:flex;gap:1.2vmin;margin-bottom:1.6vmin}#wzd i{width:1.5vmin;height:1.5vmin;border-radius:50%;background:#3a3a42;transition:.3s}#wzd i.dn{background:#8a6a3a}#wzd i.on{background:#e0b860;box-shadow:0 0 10px rgba(224,184,96,.7)}
+#wzn{width:100%;max-width:880px;display:flex;justify-content:space-between;align-items:center}
+#wzn button{background:#2a2a30;border:1px solid #8a5a2a;color:#f0d9a0;padding:1.2vmin 3.2vmin;border-radius:8px;font:inherit;font-size:clamp(11px,1.9vmin,20px);cursor:pointer;transition:.2s}
+#wzn button:hover{border-color:#e0b860;box-shadow:0 0 14px rgba(224,184,96,.3)}#wzn button.go{background:linear-gradient(180deg,#e0b860,#b8862e);color:#2a1a08;border-color:#f0d9a0;font-weight:900;letter-spacing:.06em;box-shadow:0 0 22px rgba(224,184,96,.45)}
+.pks{display:grid;grid-template-columns:repeat(4,1fr);gap:2vmin;width:min(96%,1100px)}
+.pk,.cd{background:#26262c;border:1px solid #4a3c2a;border-radius:12px;color:#f0d9a0;box-sizing:border-box;cursor:pointer}
+.pk{padding:2.4vmin 1.6vmin;text-align:center;transition:.25s}.pk:hover{border-color:#8a6a3a}.pk.on{border-color:#e0b860;box-shadow:0 0 0 1px #e0b860,0 0 26px 4px rgba(224,184,96,.3);transform:translateY(-4px)}
+.pkn{font-size:clamp(28px,7vmin,72px);font-weight:900;color:#e0b860;line-height:1}.pkg{margin-top:.6vmin;font-size:clamp(10px,1.8vmin,19px);color:#c9b48a}.pkt{margin-top:1.2vmin;font-size:clamp(11px,2vmin,21px);font-weight:700}
+.pkb{margin-top:1.2vmin;display:flex;flex-wrap:wrap;gap:.8vmin;justify-content:center}.pkb span{background:#1c1c20;border:1px solid #4a3c2a;border-radius:6px;padding:.3vmin 1vmin;font-size:clamp(9px,1.6vmin,17px)}
+.pkd{margin-top:1.2vmin;font-size:clamp(9px,1.5vmin,16px);color:#a8987a;line-height:1.4}
+.car-v{position:relative;flex:1;height:100%;overflow:hidden}.car-t{position:absolute;inset:0}.car-t.drg .cd{transition:none!important}
+.car-a{flex:none;width:5.4vmin;height:5.4vmin;min-width:34px;min-height:34px;border-radius:50%;background:#26262c;border:1px solid #5a4630;color:#e0b860;font-size:clamp(14px,2.6vmin,28px);cursor:pointer;z-index:20;display:flex;align-items:center;justify-content:center;padding:0}.car-a:hover{border-color:#e0b860;box-shadow:0 0 14px rgba(224,184,96,.35)}
+.cd{position:absolute;left:50%;top:50%;width:min(44%,380px);min-height:46%;padding:2.4vmin 2vmin;transition:transform .35s ease,opacity .35s ease,box-shadow .3s,border-color .3s;touch-action:pan-y;display:flex;flex-direction:column;gap:1vmin}
+.cd.on{border-color:#e0b860;box-shadow:0 0 0 1px #e0b860,0 0 34px 8px rgba(224,184,96,.32)}
+.ct{font-size:clamp(14px,2.6vmin,28px);font-weight:700;color:#f0d9a0}.cdx{font-size:clamp(10px,1.7vmin,18px);line-height:1.5;color:#c9b48a}
+.mpb{height:7vmin;border-radius:8px;border:1px solid #4a3c2a}.mt{font-size:clamp(10px,1.7vmin,18px);font-weight:700;padding:.4vmin 1.2vmin;border-radius:6px;align-self:flex-start;background:#1c1c20;border:1px solid #5a4630}.mt.half{color:#8ad07a}.mt.one{color:#e0b860}.mt.two{color:#e07a5a}
+.ms{display:flex;gap:1.6vmin;flex-wrap:wrap;font-size:clamp(10px,1.8vmin,19px);color:#f0d9a0}
+#lg{background:#1c1c20!important;flex-direction:column;gap:5vmin;font-family:Cinzel,"Cormorant Garamond",Georgia,serif}.lgl2{max-width:min(30vw,280px);max-height:15vh;width:auto;height:auto;object-fit:contain}
+#lgn{display:flex;gap:1.5vmin}#lgn i{width:2.4vmin;height:2.4vmin;min-width:12px;min-height:12px;border:1px solid #5a4630;border-radius:50%;background:#26262c;transition:all .25s}#lgn i.f{background:#e0b860;border-color:#f0d9a0;box-shadow:0 0 14px rgba(224,184,96,.65)}
+#lgtip{position:absolute;bottom:9vh;left:50%;transform:translateX(-50%);width:min(82vw,660px);text-align:center;opacity:0;transition:opacity .55s;color:#d9c9a0;font-size:clamp(10px,1.8vmin,19px);line-height:1.5}#lgtip.on{opacity:1}#lgtip b{display:block;letter-spacing:.34em;font-size:.78em;color:#e0b860;margin-bottom:.8vmin}
+@media (orientation:portrait){.pks{grid-template-columns:repeat(2,1fr)}.cd{width:70%}}
+/* panel zaman: 25% lebih ramping, scroll glassmorphism, drag-to-scroll, judul grup lebih terang */
+#era{width:16%!important}.eg{display:inline-block;background:#3b2412!important;color:#ffd36b!important;font-weight:900;padding:.12em .7em;border-radius:4px;letter-spacing:.14em;text-shadow:0 0 6px rgba(255,211,107,.35)}
+#era,#sum,#nb,#setup,#era *{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.45) transparent}
+#era::-webkit-scrollbar,#sum::-webkit-scrollbar,#nb::-webkit-scrollbar,#setup::-webkit-scrollbar{width:8px}
+#era::-webkit-scrollbar-track,#sum::-webkit-scrollbar-track,#nb::-webkit-scrollbar-track,#setup::-webkit-scrollbar-track{background:rgba(255,255,255,.07);border-radius:8px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+#era::-webkit-scrollbar-thumb,#sum::-webkit-scrollbar-thumb,#nb::-webkit-scrollbar-thumb,#setup::-webkit-scrollbar-thumb{background:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.5);border-radius:8px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#era,#sum{touch-action:pan-y;cursor:grab}
+#nt,#bn,#nd{display:none!important}
+/* mode vertikal: setiap panel diwakili 1 tombol di atas; klik = tampil di bawah, satu per satu */
+#pbar{position:absolute;left:1%;right:1%;top:9%;display:none;gap:calc(.8*var(--q));z-index:8;pointer-events:auto}body.pv #pbar{display:flex}
+#pbar button{flex:1;display:flex;align-items:center;justify-content:center;gap:calc(.4*var(--q));padding:calc(.6*var(--q)) calc(.4*var(--q));font-size:calc(1.5*var(--q));line-height:1.1;white-space:nowrap}#pbar button span{font-size:calc(1.15*var(--q))}#pbar button.on{background:#e0b860;color:#2a1a08}
+body.pv #res,body.pv #era,body.pv #dlg,body.pv #sum{display:none!important}
+body.pv #res.ps,body.pv #era.ps,body.pv #dlg.ps,body.pv #sum.ps{display:block!important;left:2%!important;right:2%!important;top:auto!important;bottom:2%!important;width:96%!important;max-height:46%!important;height:auto!important;overflow:auto!important;z-index:9}
+body.pv #tg,body.pv #nd,body.pv #bn{display:none!important}
 </style><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cinzel+Decorative:wght@700;900&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet"></head><body>
 <div id="stage"><div id="g"></div>
-<div id="ov"><div class="bx" id="hud"></div><div class="bx" id="res"></div><div class="bx" id="sel"></div><div class="bx" id="era"></div>
-<div class="bx" id="dlg"><span class="tag">📜 Quest Log</span><div id="log"></div></div>
+<div id="ov"><div class="bx" id="hud"></div><div id="pbar"></div><div class="bx" id="res"></div><div class="bx" id="sel"></div><div class="bx" id="era"></div>
+<div class="bx" id="dlg"><span class="tag">📜 Riwayat Peradaban</span><div id="log"></div></div>
 <div class="bx" id="sum"><span class="tag">🏕️ Status Desa</span><div id="sumt"></div></div><div class="bx" id="nt"><span class="tag">Achievement <b id="nc">0</b></span><div id="nh"><button id="nmin" title="Minimize">–</button><button id="nclr" title="Kosongkan">🗑</button><button id="nx" title="Tutup">✕</button></div><div id="nb"></div></div><div class="bx" id="fate"></div><div class="bx" id="info"></div><div id="eb"></div><div id="ap"></div><div id="ed"></div><div class="bx" id="dbg"></div><button id="bn" title="Pencapaian">🏆 0</button><div id="nd"><button id="ndt" title="Sembunyikan/tampilkan ikon">◂</button></div><button id="tg" title="Sembunyikan panel">Panel</button></div>
-<div class="bx" id="setup"></div><div id="ld"><div class="orn">❖ ═══ ◆ ═══ ❖</div><h1 id="ldt"></h1><div class="ldsub">SIMULASI PERADABAN</div><div class="orn">❖ ═══ ◆ ═══ ❖</div><div id="ldp">TEKAN ATAU KETUK DI MANA SAJA UNTUK MULAI</div></div><div id="lg"><div id="lgt">DOOM CIVIL</div><div id="lgd"><i style="--n:0"></i><i style="--n:1"></i><i style="--n:2"></i><i style="--n:3"></i><i style="--n:4"></i><i style="--n:5"></i><i style="--n:6"></i><i style="--n:7"></i></div></div></div>
+<div class="bx" id="setup"></div><div id="wz"></div><div id="ld"><div id="ldlogo"></div><h1 id="ldt"></h1><div class="ldsub">Idle Civilization Simulator</div><div id="ldp">Tekan Tombol Atau Tap Apapun Di Layar</div></div><div id="lg"><div id="lgl"></div><div id="lgn"></div><div id="lgtip"></div></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.80.1/phaser.min.js"></script>
 <script>
 /* HOOK SPRITE: isi SPRITE_OVERRIDES[namaSheet]={src:'data:image/png;base64,...',cols:jumlahKolom,fy:titikKaki} dengan gambar ukuran asli (per frame cw x ch), urutan frame = urutan nama frame pada sheet. Contoh sheet: house, bld, fauna, props, crops, deer, hero_m, hero_f0..2, hero_r. Sheet tanpa override tetap digambar lewat kode. */
@@ -106,7 +154,7 @@ const SPRITE_OVERRIDES={};
 const TILE_OVERRIDES={}; /* HOOK TILE: TILE_OVERRIDES[jenis]={src:'data:image/png;base64,...',n:jumlahVarian}; strip horizontal tile 16x16. jenis: water,sand,dirt,grass,rock,snow */
 /* ERA_PACE: pengali ambang K semua teknologi. 1 = normal, 2 = zaman dua kali lebih lambat, .5 = dua kali lebih cepat */
 const ERA_PACE=1;
-const VERSION='v.11.51DEV';
+const VERSION='v.11.511DEV';
 /* ==== CORE ENGINE START =============================================== */
 const CharacterBirth = (() => {
   const VERSION = '1.0.0';
@@ -353,7 +401,124 @@ if (typeof module !== 'undefined') module.exports = CharacterBirth;
    penampilan, nama, aksesoris, rambut. Tekstur per karakter memakai nama frame yang sama dengan sheet lama
    (d_i0, s_w2, u_a1, r0...), sehingga loop animasi lama tetap bekerja.
    USE_ASTERIA=false -> kembali ke sprite lama (hero_m / hero_f0..2 / hero_r). */
+/* >>> UX v11.511 */
+/* ===================== v11.511: UX baru (splash, wizard, loading, panel) ===================== */
+/* Kesulitan: SATU variabel puncak. Faktor akhir = DIFF_BASE x mult tiap pilihan Millennium. */
+const DIFF_BASE=1.0;
+const MILLENNIA=[
+ {k:'half',n:'Half Millennium',years:50,max:150,mult:1.0,tag:'Normal',d:'Permainan ringkas 50 tahun. Populasi maksimal 150. Cocok untuk belajar mekanik.'},
+ {k:'one',n:'1 Millennium',years:100,max:250,mult:1.25,tag:'Menantang',d:'Perjalanan 100 tahun. Populasi maksimal 250. Penyakit, dingin, serangan, dan lapar lebih keras.'},
+ {k:'two',n:'2 Millennium',years:200,max:400,mult:1.5,tag:'Brutal',d:'Epik 200 tahun. Populasi maksimal 400. Bahaya jauh lebih sering dan lebih besar.'}];
+const START_PACKS=[
+ {n:4,m:2,t:'Bekal Besar',bonus:{food:60,wood:50,stone:30,hide:4},d:'Sedikit orang, bekal paling berlimpah.'},
+ {n:8,m:4,t:'Bekal Cukup',bonus:{food:32,wood:26,stone:16,hide:2},d:'Seimbang antara tangan dan bekal.'},
+ {n:12,m:6,t:'Bekal Tipis',bonus:{food:14,wood:12,stone:8,hide:0},d:'Banyak tangan, bekal sedikit.'},
+ {n:18,m:-1,t:'Banyak Tangan',bonus:{food:0,wood:0,stone:0,hide:0},d:'Jumlah pria dan wanita diacak. Tanpa bekal tambahan.'}];
+const PRO_TIPS=[
+ 'Founding Fathers punya bakat maksimal dan mau mengisi job apa pun yang dibutuhkan untuk naik zaman.',
+ 'Panel "Misi Pendiri" menunjukkan prioritas awal: pangan, rumah, bahan baku, dan kelahiran.',
+ 'Naik zaman butuh Skor Ekonomi, bangunan, job tertentu, dan populasi. Pantau panel "Menuju zaman berikutnya".',
+ 'Stok pangan di bawah 4× populasi adalah tanda bahaya. Warga mulai mengutamakan berburu dan bertani.',
+ 'Jika stok pangan habis, warga yang lapar akan memotong ternak atau memanen ladang demi bertahan hidup.',
+ 'Ladang rusak di musim dingin. Gerabah dan Irigasi mengurangi kerusakan itu, jadi simpan pangan di musim gugur.',
+ 'Ternak menghasilkan pangan tiap hari dan disembelih otomatis ketika stok menipis.',
+ 'Tidur di gubuk memulihkan energi lebih cepat dan jauh lebih aman dibanding tidur di tanah terbuka.',
+ 'Api unggun mengurangi serangan hewan buas dan bahaya dingin. Pakaian dan gubuk melengkapinya.',
+ 'Warga akan pulang makan atau tidur sendiri saat lapar atau lelah. Tugas yang jauh membuat mereka berangkat pulang lebih awal.',
+ 'Kecepatan x1 paling aman untuk keputusan penting. Kecepatan tinggi cocok untuk menunggu panen.',
+ 'Fate datang sebagai pilihan Blessing atau Doom. Baca dulu konsekuensinya sebelum memilih.',
+ 'Permainan otomatis dijeda saat popup Fate, dialog zaman, atau diplomasi tampil.',
+ 'Jenius lahir dengan bakat job tertentu dan dewasa dua kali lebih cepat. Mereka menarik pendatang sejenis.',
+ 'Surge dari jenius memberi satu tahun bonus kelahiran, riset, panen, atau kesehatan, tergantung jenisnya.',
+ 'Anak berbakat yang sejenis dengan jenius dewasa akan tumbuh lebih cepat.',
+ 'Tiang obor di sudut pagar (Zaman Perunggu) menerangi malam dan mengurangi bahaya dingin.',
+ 'Taman Desa muncul di Abad Pertengahan dan menutup lantai desa dengan rumput berbunga. Bunganya hilang saat musim dingin.',
+ 'Watch Tower naik tingkat otomatis setelah Rumah batu dan Balai desa. Siapkan kayu, batu, dan besi.',
+ 'Pagar dan gerbang dibangun bertahap, satu tiang per hari. Setiap gerbang punya dua menara jaga.',
+ 'Jumlah Warrior bertambah bila serangan sering terjadi. Pastikan pasukan cukup sebelum Abad Pertengahan.',
+ 'Penyerbu mundur bila pemimpinnya tumbang oleh panah menara dan Warrior. Jaga pasukan tetap sehat.',
+ 'Desa tetangga baru bisa ditemukan setelah Zaman Perunggu dan populasi yang cukup besar.',
+ 'Desa dagang mengirim kafilah, sedangkan desa perang bisa menyerbu. Perhatikan sifat dan sikapnya.',
+ 'Aliansi menambah kekuatan pertahanan, tetapi terima hanya bila kamu siap menanggung konsekuensinya.',
+ 'Ciri Khas Masyarakat memberi bonus permanen. Pilih yang menutup kelemahan awalmu: pangan, penyakit, atau pertahanan.',
+ 'Setiap peta punya karakter berbeda: sumber pangan, batu, dan tingkat penyakit tidak sama.',
+ 'Populasi awal kecil mendapat bekal besar. Populasi besar punya banyak tangan tetapi bekal tipis.',
+ 'Dengan 18 pendiri, jenis kelamin diacak. Pastikan ada pasangan agar kelahiran bisa berjalan.',
+ 'Anak berusia 8 tahun ke atas ikut mencari buah saat pangan menipis.',
+ 'Kelahiran butuh pasangan, pangan cukup, dan tempat tinggal. Stok pangan rendah menurunkan peluang hamil.',
+ 'Pendatang datang bila stok pangan cukup dan masih ada tempat tinggal.',
+ 'Scholar mempercepat riset, dan Academy membuat anak belajar 2,2× lebih cepat.',
+ 'Blacksmith dan Forge dibutuhkan untuk Zaman Besi. Tanpa bijih, besi tidak bisa dilebur.',
+ 'Farm Silo di dekat ladang menurunkan pembusukan pangan.',
+ 'Kuota job menyesuaikan kebutuhan. Saat pangan genting, Scholar, Priest, dan Blacksmith dikerahkan menjadi penghasil pangan.',
+ 'Musim dingin berbahaya. Siapkan pangan, gubuk, api, dan pakaian sebelum musim gugur berakhir.',
+ 'Saat badai, warga berhenti bekerja dan berlindung.',
+ 'Klik seorang warga untuk melihat umur, job, bakat, dan orang tuanya.',
+ 'Lambang ★ menandai jenius, dan ⚜ menandai Founding Father.',
+ 'Kematian Founding Father diumumkan dengan alarm. Mereka penopang generasi awal.',
+ 'Tombol 🎵 dan 🔊 mengatur musik dan efek suara. Taruh file musik di assets/bgm/.',
+ 'Tombol 📝 mencetak Backlog permainan (JSON). Unggah untuk menganalisis dan menyetel keseimbangan.',
+ 'Geser kamera dengan drag, dan zoom dengan roda mouse atau cubitan dua jari.',
+ 'Target Millennium menentukan lama permainan, batas populasi, dan tingkat kesulitan.',
+ 'Pemimpin desa muncul saat populasi dan Skor Ekonomi cukup, dan memberi bonus pertahanan di dalam desa.',
+ 'Jika populasi nyaris punah, penyintas dewasa akan datang menolong anak-anak yang tersisa.',
+ 'Surplus pangan adalah asuransimu. Desa yang tenang selalu menyimpan lebih dari yang dibutuhkan.',
+ 'Panel Riwayat Peradaban mencatat semua kejadian penting. Gunakan untuk melacak penyebab krisis.',
+ 'Jangan terburu-buru: naik zaman otomatis begitu semua syarat terpenuhi dan ada masa transisi 30 hari.'];
+let _logoSrc=undefined;
+function loadLogo(cb){if(_logoSrc!==undefined){cb(_logoSrc);return}const C=['assets/img/doomcivil_splash.png','../assets/img/doomcivil_splash.png','/assets/img/doomcivil_splash.png'];let i=0;const t=()=>{if(i>=C.length){_logoSrc=null;cb(null);return}const m=new Image();m.onload=()=>{_logoSrc=C[i];cb(_logoSrc)};m.onerror=()=>{i++;t()};m.src=C[i]};t()}
+function logoHtml(cls){return _logoSrc?'<img class="'+cls+'" src="'+_logoSrc+'" alt="Doom Civil">':'<div class="'+cls+' lgtxt">DOOM CIVIL</div>'}
+function dragScroll(el){if(!el)return;let d=null;el.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||e.button!==0)return;d={y:e.clientY,s:el.scrollTop,m:0}});
+ addEventListener('pointermove',e=>{if(!d)return;const dy=e.clientY-d.y;if(Math.abs(dy)>4)d.m=1;if(d.m)el.scrollTop=d.s-dy});
+ addEventListener('pointerup',()=>{if(d&&d.m){el._dm=1;setTimeout(()=>{el._dm=0},60)}d=null});
+ el.addEventListener('click',e=>{if(el._dm){e.stopPropagation();e.preventDefault()}},true)}
+function pvInit(){const bar=document.getElementById('pbar');if(!bar)return;const P=[['res','📦','Sumber'],['era','🏛','Zaman'],['dlg','📜','Riwayat'],['sum','🏕','Status']];
+ bar.innerHTML=P.map(p=>'<button data-p="'+p[0]+'">'+p[1]+' <span>'+p[2]+'</span></button>').join('');
+ bar.onclick=e=>{const b=e.target.closest('button');if(!b)return;const el=document.getElementById(b.dataset.p),was=el.classList.contains('ps');P.forEach(q=>document.getElementById(q[0]).classList.remove('ps'));bar.querySelectorAll('button').forEach(x=>x.classList.remove('on'));if(!was){el.classList.add('ps');b.classList.add('on')}};
+ const fit=()=>{const pv=innerHeight>innerWidth;document.body.classList.toggle('pv',pv);if(pv){const h=document.getElementById('hud').getBoundingClientRect();bar.style.top=(h.bottom+4)+'px'}else{P.forEach(q=>document.getElementById(q[0]).classList.remove('ps'));bar.querySelectorAll('button').forEach(x=>x.classList.remove('on'))}};
+ addEventListener('resize',fit);addEventListener('orientationchange',fit);setInterval(fit,1500);fit()}
+/* carousel generik: kartu tengah menyala, kiri/kanan setengah terlihat, panah, klik, drag-swipe, keyboard */
+function mkCar(host,items,render,idx,onSel){host.innerHTML='<button class="car-a l" aria-label="Sebelumnya">◂</button><div class="car-v"><div class="car-t"></div></div><button class="car-a r" aria-label="Berikutnya">▸</button>';
+ const v=host.querySelector('.car-v'),t=host.querySelector('.car-t');t.innerHTML=items.map((it,i)=>'<div class="cd" data-i="'+i+'">'+render(it,i)+'</div>').join('');const cs=[...t.children];let cur=idx,dx=0,drag=null,moved=0;
+ const gap=()=>(cs[0].offsetWidth||260)*1.08;
+ const lay=()=>{const g=gap();cs.forEach((c,i)=>{const o=i-cur+dx/g,a=Math.abs(o);c.style.transform='translate(-50%,-50%) translateX('+(o*g)+'px) scale('+(1-Math.min(a,2)*.14)+')';c.style.opacity=a>2.3?0:(1-Math.min(a,2)*.3);c.style.zIndex=10-Math.round(a);c.classList.toggle('on',i===cur);c.style.pointerEvents=a>2.3?'none':'auto'})};
+ const go=i=>{cur=Math.max(0,Math.min(items.length-1,i));dx=0;lay();onSel(cur)};
+ host.querySelector('.car-a.l').onclick=()=>go(cur-1);host.querySelector('.car-a.r').onclick=()=>go(cur+1);
+ v.addEventListener('pointerdown',e=>{if(e.button!==0&&e.pointerType==='mouse')return;drag={x:e.clientX};moved=0;t.classList.add('drg');try{v.setPointerCapture(e.pointerId)}catch(_){}});
+ v.addEventListener('pointermove',e=>{if(!drag)return;dx=e.clientX-drag.x;if(Math.abs(dx)>6)moved=1;lay()});
+ const up=()=>{if(!drag)return;t.classList.remove('drg');const g=gap(),n=Math.round(-dx/g);drag=null;if(moved)go(cur+(n||(dx<0?1:-1)*(Math.abs(dx)>40?1:0)));else{dx=0;lay()}};
+ v.addEventListener('pointerup',up);v.addEventListener('pointercancel',up);
+ cs.forEach((c,i)=>c.addEventListener('click',()=>{if(!moved&&i!==cur)go(i)}));
+ if(mkCar.off)mkCar.off();const key=e=>{const z=document.getElementById('wz');if(!host.isConnected||!z||z.style.display==='none')return;if(e.key==='ArrowLeft')go(cur-1);else if(e.key==='ArrowRight')go(cur+1)};addEventListener('keydown',key);addEventListener('resize',lay);
+ mkCar.off=()=>{removeEventListener('keydown',key);removeEventListener('resize',lay);mkCar.off=null};
+ go(idx);return{go,cur:()=>cur,lay}}
+function showSetup(){const w=document.getElementById('wz');w.style.display='flex';const st={page:0,pack:0,tend:0,map:0,mil:0},$=i=>document.getElementById(i);
+ const pal=m=>{const a=(m.pal&&m.pal.gd)||[60,110,60],b=(m.pal&&m.pal.gl)||[110,160,90],c=(m.pal&&m.pal.sn)||[200,200,200];return 'linear-gradient(135deg,rgb('+a+'),rgb('+b+') 60%,rgb('+c+'))'};
+ const PG=[
+  {t:'Berapa Banyak Pendiri?',s:'Founding Fathers adalah populasi awalmu. Makin sedikit, makin besar bekal awalnya.',build(h){h.innerHTML='<div class="pks">'+START_PACKS.map((p,i)=>'<div class="pk'+(i===st.pack?' on':'')+'" data-i="'+i+'"><div class="pkn">'+p.n+'</div><div class="pkg">'+(p.m<0?'Acak':p.m+' L + '+(p.n-p.m)+' P')+'</div><div class="pkt">'+p.t+'</div><div class="pkb">'+(p.bonus.food?'<span>🍖 +'+p.bonus.food+'</span>':'')+(p.bonus.wood?'<span>🪵 +'+p.bonus.wood+'</span>':'')+(p.bonus.stone?'<span>🪨 +'+p.bonus.stone+'</span>':'')+(p.bonus.hide?'<span>🦌 +'+p.bonus.hide+'</span>':'')+(!p.bonus.food?'<span>Tanpa bonus</span>':'')+'</div><div class="pkd">'+p.d+'</div></div>').join('')+'</div>';
+   h.querySelectorAll('.pk').forEach(c=>c.onclick=()=>{st.pack=+c.dataset.i;h.querySelectorAll('.pk').forEach(x=>x.classList.toggle('on',x===c))})}},
+  {t:'Ciri Khas Masyarakat',s:'Keunggulan bawaan peradabanmu. Geser, klik panah, atau tekan ← →.',build(h){mkCar(h,TEND,x=>'<div class="ct">'+x.n+'</div><div class="cdx">'+x.d+'</div>',st.tend,i=>{st.tend=i})}},
+  {t:'Pilih Peta',s:'Tempat peradabanmu tumbuh. Tiap peta punya pangan, medan, dan bahaya berbeda.',build(h){mkCar(h,MAPS,x=>'<div class="mpb" style="background:'+pal(x)+'"></div><div class="ct">'+x.n+'</div><div class="cdx">'+x.d+'</div>',st.map,i=>{st.map=i})}},
+  {t:'Target Millennium',s:'Menentukan lama permainan, batas populasi, dan tingkat kesulitan.',build(h){mkCar(h,MILLENNIA,x=>'<div class="ct">'+x.n+'</div><div class="mt '+x.k+'">'+x.tag+' · ×'+(DIFF_BASE*x.mult).toFixed(2)+'</div><div class="ms"><span>⏳ '+x.years+' tahun</span><span>👥 maks '+x.max+'</span></div><div class="cdx">'+x.d+'</div>',st.mil,i=>{st.mil=i})}}];
+ const draw=()=>{const P=PG[st.page];w.innerHTML='<div id="wzh">'+logoHtml('wzlogo')+'<div class="wzs">Idle Civilization Simulator</div></div><div id="wzt">'+P.t+'</div><div id="wzsub">'+P.s+'</div><div id="wzb"></div><div id="wzd">'+PG.map((_,i)=>'<i class="'+(i===st.page?'on':i<st.page?'dn':'')+'"></i>').join('')+'</div><div id="wzn">'+(st.page>0?'<button id="wzp">◂ Kembali</button>':'<span></span>')+(st.page<PG.length-1?'<button id="wzx">Lanjut ▸</button>':'<button id="wzx" class="go">Mulai Peradabanmu</button>')+'</div>';
+  if(mkCar.off)mkCar.off();P.build($('wzb'));if($('wzp'))$('wzp').onclick=()=>{st.page--;draw()};$('wzx').onclick=()=>{if(st.page<PG.length-1){st.page++;draw()}else start()}};
+ const start=()=>{const pk=START_PACKS[st.pack],ml=MILLENNIA[st.mil],N=pk.n;let M=pk.m;if(M<0){let k=0;for(let i=0;i<N;i++)if(Math.random()<.5)k++;M=cl(k,3,N-3)}
+  CFG={pop:N,m:M,years:ml.years,max:ml.max,map:st.map,tend:st.tend,tile:1,sb:Object.assign({},pk.bonus),diff:DIFF_BASE*ml.mult,mil:ml.k,pk:pk.n};
+  MAP=MAPS[CFG.map];TD=TEND[CFG.tend];TR=pick(TRIBES);if(mkCar.off)mkCar.off();w.style.display='none';
+  showLoad(()=>new Phaser.Game({type:Phaser.AUTO,parent:'g',width:W,height:H,pixelArt:true,backgroundColor:'#0f1a26',scale:{mode:Phaser.Scale.ENVELOP,autoCenter:Phaser.Scale.CENTER_BOTH},scene:[Game]}))};
+ w.onkeydown=null;addEventListener('keydown',e=>{if(w.style.display==='none')return;if(e.key==='Enter'){const x=$('wzx');if(x)x.click()}});draw()}
+function showLoad(go){const e=document.getElementById('lg'),t0=Date.now(),nd=document.getElementById('lgn'),tp=document.getElementById('lgtip'),lo=document.getElementById('lgl');window.GAMEREADY=false;
+ lo.innerHTML=logoHtml('lgl2');nd.innerHTML=Array.from({length:10},()=>'<i></i>').join('');const nodes=[...nd.children],tips=PRO_TIPS.slice().sort(()=>Math.random()-.5).slice(0,2);
+ const showTip=i=>{tp.innerHTML='<b>PRO TIP</b><span>'+tips[i]+'</span>';tp.classList.add('on')};
+ e.classList.remove('out');e.classList.add('on');setTimeout(()=>showTip(0),250);setTimeout(()=>tp.classList.remove('on'),1900);setTimeout(()=>showTip(1),2300);
+ const iv2=setInterval(()=>{const n=Math.min(10,Math.floor((Date.now()-t0)/400));nodes.forEach((x,i)=>x.classList.toggle('f',i<n))},80);
+ Promise.all([Promise.race([loadMapAssets(),new Promise(r=>setTimeout(r,2000))]),new Promise(r=>setTimeout(r,900))]).then(()=>go());
+ const iv=setInterval(()=>{const el=Date.now()-t0;if(el>=4000&&window.GAMEREADY||el>20000){clearInterval(iv);clearInterval(iv2);nodes.forEach(x=>x.classList.add('f'));tp.classList.remove('on');e.classList.add('out');setTimeout(()=>e.classList.remove('on'),450)}},100)}
+
+/* <<< UX v11.511 */
 const USE_ASTERIA=true;
+/* Kehalusan sprite karakter (SATU variabel puncak): 0 = tanpa smooth (piksel tajam), 1 = 1x EPX, 2 = 2x, 3 = 3x. Memori tekstur per karakter naik 4x tiap tingkat. */
+const spriteSmooth=1;
 const AST_STYLE=['roman','mono','slavic','germanic','roman','slavic','germanic','mono'];
 const AST_KIND={
  villager:{body:{none:.55,robe:.2,apron:.25},head:{none:.7,hat:.2,goggles:.1},beard:.3,pack:.1},
@@ -382,17 +547,19 @@ const AST={
  childName(g,sex,m,f){const U=g.nmUsed=g.nmUsed||new Set(),ti=Math.max(0,TRIBES.indexOf(TR)),st=AST_STYLE[ti%AST_STYLE.length],par=(f&&f.name)||(m&&m.name)||'',sur=par.split(' ').slice(1).join(' ');let nm='';
   for(let i=0;i<40;i++){const c=this.gen({sex,kind:'villager',style:st,surname:false});nm=sur?c.name+' '+sur:c.name;if(!U.has(nm))break}return this.uniq(g,nm)},
  /* tekstur sheet per karakter: 27 frame (d/u/s x idle2,walk4,kerja3) + 4 frame guling (r0..r3) */
- sheet(s,key,p){const cw=18,ch=23,cols=9,names=[],DM={d:0,u:1,s:2},WS=[1,0,3,0];
+ sheet(s,key,p){const cw=18,ch=23,cols=9,names=[],DM={d:0,u:1,s:2},WS=[1,0,3,0],sm=Math.max(0,Math.min(3,spriteSmooth|0));
   for(const d of'dus')for(const [x,n] of [['i',2],['w',4],['a',3]])for(let i=0;i<n;i++)names.push(d+'_'+x+i);for(let i=0;i<4;i++)names.push('r'+i);
-  const rows=Math.ceil(names.length/cols);let cv=document.createElement('canvas');cv.width=cw*cols;cv.height=ch*rows;const c=cv.getContext('2d');c.imageSmoothingEnabled=false;const F=(d,fr)=>CharacterBirth.getFrame(p,d,fr);
+  const rows=Math.ceil(names.length/cols);let cv=document.createElement('canvas');cv.width=cw*cols;cv.height=ch*rows;const c=cv.getContext('2d');c.imageSmoothingEnabled=false;
+  const tmp=document.createElement('canvas');tmp.width=cw;tmp.height=ch;const tg=tmp.getContext('2d');tg.imageSmoothingEnabled=false;const F=(d,fr)=>CharacterBirth.getFrame(p,d,fr);
   names.forEach((n,idx)=>{const px=(idx%cols)*cw,py=((idx/cols)|0)*ch;
    if(n[0]==='r'){c.save();c.beginPath();c.rect(px,py,cw,ch);c.clip();c.translate(px+9,py+12);c.rotate(+n[1]*Math.PI/2);c.scale(.78,.78);c.drawImage(F(0,0),-9,-12);c.restore();return}
-   const d=DM[n[0]],t=n[2],i=+n[3];
-   if(t==='i')c.drawImage(F(d,0),px,py);
-   else if(t==='w')c.drawImage(F(d,WS[i]),px,py);
-   else{c.drawImage(F(d,[0,1,3][i]),0,0,cw,18,px,py,cw,18);c.drawImage(F(d,0),0,18,cw,5,px,py+18,cw,5)}});
-  let m=1;if(MODE===1){cv=epx(cv);m=2}
-  if(s.textures.exists(key))s.textures.remove(key);const tx=s.textures.addCanvas(key,cv);names.forEach((n,i)=>tx.add(n,0,(i%cols)*cw*m,((i/cols)|0)*ch*m,cw*m,ch*m));if(MODE===1)tx.setFilter(Phaser.Textures.FilterMode.LINEAR);SH[key]={cw,ch,fy:21,m};return m},
+   /* koreksi: frame samping Asteria menghadap berlawanan arah jalan -> dicerminkan (atas/bawah tidak diubah) */
+   const d=DM[n[0]],t=n[2],i=+n[3],fl=d===2,g=fl?tg:c,ox=fl?0:px,oy=fl?0:py;if(fl)tg.clearRect(0,0,cw,ch);
+   if(t==='i')g.drawImage(F(d,0),ox,oy);else if(t==='w')g.drawImage(F(d,WS[i]),ox,oy);
+   else{g.drawImage(F(d,[0,1,3][i]),0,0,cw,18,ox,oy,cw,18);g.drawImage(F(d,0),0,18,cw,5,ox,oy+18,cw,5)}
+   if(fl){c.save();c.translate(px+cw,py);c.scale(-1,1);c.drawImage(tmp,0,0);c.restore()}});
+  for(let k=0;k<sm;k++)cv=epx(cv);const m=1<<sm;
+  if(s.textures.exists(key))s.textures.remove(key);const tx=s.textures.addCanvas(key,cv);names.forEach((n,i)=>tx.add(n,0,(i%cols)*cw*m,((i/cols)|0)*ch*m,cw*m,ch*m));if(sm>0)tx.setFilter(Phaser.Textures.FilterMode.LINEAR);SH[key]={cw,ch,fy:21,m};return m},
  attach(g,a,p){const key='ast'+a.id+'_'+(a.arev=(a.arev|0)+1),m=this.sheet(g,key,p);a.ast=p;a.astKey=key;a.asc=PX/m;return key},
  put(g,a,f,x,y){const key=this.attach(g,a,a.ast);return g.add.image(x,y,key,f).setScale(a.asc).setOrigin(.5,21/23)},
  swap(g,a){const old=a.astKey;this.attach(g,a,a.ast);a.spr.setTexture(a.astKey,'d_i0');if(old&&g.textures.exists(old))g.textures.remove(old)},
@@ -473,7 +640,7 @@ function blSummary(g){const b=g.bl,D=b.deaths,by=f=>{const o={};D.forEach(x=>{co
   const fl=[];if(D.length&&starve/D.length>.4)fl.push('Kelaparan/kelelahan penyebab dominan wafat');if(out.hari_stok_pangan_habis_persen>25)fl.push('Stok pangan sering habis (>25% waktu)');if(tot.none&&tot.none/ts>.12)fl.push('Banyak dewasa tanpa tugas (>12%)');if(out.pop_min<=3&&out.pop_awal>6)fl.push('Populasi sempat jatuh ke <=3');out.catatan_otomatis=fl;return out}
 function blBuild(g){const b=g.bl,o={format:'doomcivil-backlog',schema:2,game:VERSION,diekspor:new Date().toISOString(),
   petunjuk:'File ini dibuat otomatis untuk analisis balance. rows[] = potret tiap ~3 hari game, urutan kolom di columns[]. events[] = [hari,teks]. deaths[] = tiap kematian (penyebab, kondisi saat wafat, jarak dari api unggun). act = jumlah dewasa per jenis tugas, jobs = jumlah per job, foodIn = pangan masuk gudang sejak potret sebelumnya, eaten = jumlah porsi dimakan, scav = makan darurat.',
-  meta:{peta:MAP.n,suku:TR.n,ciri_khas:TEND[CFG.tend].n,pop_awal:CFG.pop,laki_awal:CFG.m,target_tahun:CFG.years,satuan_hari:'1 hari game = 24 jam game; K = Skor Ekonomi'},
+  meta:{peta:MAP.n,suku:TR.n,ciri_khas:TEND[CFG.tend].n,pop_awal:CFG.pop,laki_awal:CFG.m,target_tahun:CFG.years,millennium:CFG.mil||null,faktor_kesulitan:CFG.diff||1,paket_awal:CFG.pk||null,bekal_awal:CFG.sb||null,satuan_hari:'1 hari game = 24 jam game; K = Skor Ekonomi'},
   ringkasan:blSummary(g),engine_karakter:'Asteria '+CharacterBirth.VERSION,desa_ai:(g.vil||[]).map(v=>({nama:v.name,pemimpin:v.leader,sifat:v.trait,skala:v.sz,zaman:ERA[Math.min(8,v.eraF|0)],pop:v.pop,pasukan:v.army,kekuatan:Math.round(v.str*10)/10,sikap:Math.round(v.att),dikenal:!!v.known,sekutu:!!v.ally,budaya:v.cul&&{gaya_nama:v.cul.style,rambut:v.cul.hn,kulit:v.cul.sn},sumber_daya:Object.fromEntries(Object.entries(v.res||{}).map(([k,x])=>[k,Math.round(x)]))})),columns:BL_COLS,rows:b.rows,events:b.ev,deaths:b.deaths,fates:b.fates,raids:b.raids,
   akhir:{teknologi:Object.keys(g.tech),bangunan:Object.keys(g.bld),pangan:Math.round(g.S.food),ladang:g.fields.length,ternak:g.herd|0,hunian:g.huts.length,jobs:g.jobN||{}}};return o}
 function blJson(g){return JSON.stringify(blBuild(g))}
@@ -813,7 +980,7 @@ class Game extends Phaser.Scene{
  constructor(){super('game')}
  create(){
   makeTextures(this);extra(this);mapSprites(this);makeIcons(this);seed=7;GM=this;const N=CFG.pop;
-  this.RS=Math.min(4.5,Math.max(1,.55+N/14));this.S={food:Math.max(12,6*N),wood:Math.min(150,2*N),stone:0,iron:0,cloth:0,hide:0,goods:0,ore:0};this.tech={};this.st={wood:0,stone:0,food:0};this.kills=0;this.herd=0;this.K=0;
+  this.RS=Math.min(4.5,Math.max(1,.55+N/14));this.S={food:Math.max(12,6*N)+((CFG.sb||{}).food|0),wood:Math.min(150,2*N)+((CFG.sb||{}).wood|0),stone:(CFG.sb||{}).stone|0,iron:0,cloth:0,hide:(CFG.sb||{}).hide|0,goods:0,ore:0};this.tech={};this.st={wood:0,stone:0,food:0};this.kills=0;this.herd=0;this.K=0;
   this.bld={};this.raid=null;this.raidWin=this.raidLose=0;this.notes=[];this.nn=0;this.bl=blNew(this);this.boon=this.safe=this.mort=0;this.fp=null;this.fn=76800*TIME_SCALE*R(.4,.7);this.t=6;this.ag=[];this.huts=[];this.fields=[];this.log=[];this.born=0;this.dead=0;this.cause={};this.nid=0;this.si=1;this.sel=null;this.drag=0;
   this.wx='cerah';this.wxd=3;this.hot=0;this.wolf=0;this.gP=false;this.gCr=0;this.gens=[];this.leader=false;this.tabib=false;this.tani=false;this.tradeAvg=1;this.lost=0;this.rt0=performance.now();this.over=false;this.nat=1;
   this.makeGround();
@@ -996,8 +1163,8 @@ class Game extends Phaser.Scene{
  }
  upd(a,s){
   const hr=this.t%24,night=hr>=21||hr<5,kid=a.age<5110;a.walk=false;a.work=false;
-  a.age+=s/24*SIMF*(a.sl?.75:1)*(a.age<5110?(a.agf||1):1);a.hun=Math.max(0,a.hun-(kid?.9:1.4)*NEED_K*td('hung')*(this.wx==='panas'?1.15:1)*s);
-  if(a.sl){a.en=Math.min(100,a.en+(a.shel?11:6)*s);if((a.en>=98||(!night&&a.en>=70))&&!(a.rec&&a.hp<(a.mhp||100)*.8)||(a.rec&&a.hun<35&&this.S.food>=1)){a.sl=false;a.task=null;if(a.hut){a.x=a.hut.x+R(-8,8);a.y=a.hut.y+18;a.hut.occ--;a.hut=null}a.shel=false}}else a.en-=2.2*NEED_K*td('enr')*(this.season===3&&!this.tech.fire?1.2:1)*s;
+  a.age+=s/24*SIMF*(a.sl?.75:1)*(a.age<5110?(a.agf||1):1);a.hun=Math.max(0,a.hun-(kid?.9:1.4)*NEED_K*(1+(this.dk()-1)*.3)*td('hung')*(this.wx==='panas'?1.15:1)*s);
+  if(a.sl){a.en=Math.min(100,a.en+(a.shel?11:6)*s);if((a.en>=98||(!night&&a.en>=70))&&!(a.rec&&a.hp<(a.mhp||100)*.8)||(a.rec&&a.hun<35&&this.S.food>=1)){a.sl=false;a.task=null;if(a.hut){a.x=a.hut.x+R(-8,8);a.y=a.hut.y+18;a.hut.occ--;a.hut=null}a.shel=false}}else a.en-=2.2*NEED_K*(1+(this.dk()-1)*.3)*td('enr')*(this.season===3&&!this.tech.fire?1.2:1)*s;
   if(a.hun<=0){a.hp-=(kid?1.5:2.2)*s*(1-.3*(a.sk||0))*(1-.5*(this.frm||0))*this.tv();a.why='kelaparan'}else if(a.hp<(a.mhp||100)&&a.hun>40)a.hp=Math.min(a.mhp||100,a.hp+(a.sl?1.4:.3)*(this.tech.med?1.5:1)*(a.hun>70?1.8:1)*(this.wx==='cerah'?1.3:1)*td('heal')*this.pf('heal')*s);
   if(a.en<=0){a.en=8;a.task=null;a.sl=true;a.shel=false;if(a.hun<25){a.hp-=.12*s*(1-.3*(a.sk||0))*this.tv();a.why='kelelahan'}}
   if(a.hp<=0){this.die(a,a.why||'luka');return}
@@ -1068,7 +1235,7 @@ class Game extends Phaser.Scene{
   this.nat=this.trees.length/this.t0;if(this.nat<.45&&!this.deforest){this.deforest=1;this.ev('Hutan menipis akibat penebangan; tanah mulai gersang.')}
   if(this.trees.length<this.t0*1.1&&this.trees.length&&Math.random()<.4*this.gr()){const p=pick(this.trees);this.mkTree(cl(p.x+R(-140,140),60,WW-60),cl(p.y+R(-140,140),60,WH-60),.4)}
   if(this.gCr>0)this.gCr--;this.boon--;this.safe--;this.mort--;if(S.food<=0&&n>8)this.gCr=1800;
-  const sickM=td('sick')*MAP.sk*(T.well?.7:1)*(T.med?.7:1)*(this.tabib?.85:1)*(MAP.riv?.9:1)*(this.nat<.45?1.1:1)*(this.mort>0?2.5:1)*(this.imm>0?.4:1)*(1-(this.rel||0))*(1-.5*(this.sch||0))*(this.wx==='cerah'?.8:1)*this.tv()*(1-this.kingBonus())*(1-.4*this.dawn())*this.pf('sick');
+  const sickM=td('sick')*MAP.sk*(T.well?.7:1)*(T.med?.7:1)*(this.tabib?.85:1)*(MAP.riv?.9:1)*(this.nat<.45?1.1:1)*(this.mort>0?2.5:1)*(this.imm>0?.4:1)*(1-(this.rel||0))*(1-.5*(this.sch||0))*(this.wx==='cerah'?.8:1)*this.tv()*(1-this.kingBonus())*(1-.4*this.dawn())*this.pf('sick')*this.dk();
   let ad=0,rs=0,tr=0,L=false,TB=false,TA=false;const gset=new Set(this.ag.filter(x=>x.gj&&x.age>5110).map(x=>x.gj));
   this.ag.slice().forEach(a=>{
    if(a.age>a.life){this.die(a,'usia tua');return}if(a.age<5110&&!a.gen){let fz=1;gset.forEach(j=>{if(a.tl[JOBS[j].tal]>=1.4)fz=1.3});a.agf=fz}
@@ -1077,8 +1244,8 @@ class Game extends Phaser.Scene{
     if(!a.seen){a.seen=1;this.ev('★ '+a.name+' kini dewasa — '+a.gen+' sejati, pengaruhnya mulai terasa.');this.attract(a,a.gen,Math.min(7,3+Math.floor(n/20)))}if(Math.random()<.0025&&(!this.gcd||this.t>=this.gcd)){this.gcd=this.t+4380;this.attract(a,a.gen,2+((Math.random()*2)|0))}
     if(Math.random()<.003){this.ev(a.name+' bereksperimen berlebihan hingga merusak lumbung dan kayu.');S.food*=.92;S.wood=Math.max(0,S.wood-4)}}
    if(Math.random()<(.003+(T.fire?0:.004)+(a.out?.004:0)+(a.hun<30?.012:0)+(a.age<1825?.002:0)+n/400*.004)*sickM){a.hp-=(a.age<1825?38:30)*(1-.45*(a.sk||0))*(this.imm>0?.4:1);a.why='sakit'}
-   if(a.out&&Math.random()<.013*(1-.5*this.dawn())*(T.fire?.3:1)*td('host')*(this.wolf>0?3:1)*(T.hall?.3:1)*(this.safe>0?0:1)){a.hp-=50*(1-.45*(a.sk||0))*(a.job==='warrior'?.4:1)*(JOBS[a.job]&&JOBS[a.job].cls==='fighter'?1-.3*(this.armR||0):1)*(1-.5*(this.rel||0))*this.tv()*(1-this.kingBonus());a.why='serangan hewan'}
-   if(this.season===3&&Math.random()<.035*(1-.5*this.dawn())*Math.max(.05,1-(this.huts.length?.35:0)-(T.fire?.3:0)-(this.clothOk()?.3:0)-this.torchCold())){a.hp-=30*(1-.4*(a.sk||0))*this.tv();a.why='kedinginan'}
+   if(a.out&&Math.random()<.013*this.dk()*(1-.5*this.dawn())*(T.fire?.3:1)*td('host')*(this.wolf>0?3:1)*(T.hall?.3:1)*(this.safe>0?0:1)){a.hp-=50*(1-.45*(a.sk||0))*(a.job==='warrior'?.4:1)*(JOBS[a.job]&&JOBS[a.job].cls==='fighter'?1-.3*(this.armR||0):1)*(1-.5*(this.rel||0))*this.tv()*(1-this.kingBonus());a.why='serangan hewan'}
+   if(this.season===3&&Math.random()<.035*this.dk()*(1-.5*this.dawn())*Math.max(.05,1-(this.huts.length?.35:0)-(T.fire?.3:0)-(this.clothOk()?.3:0)-this.torchCold())){a.hp-=30*(1-.4*(a.sk||0))*this.tv();a.why='kedinginan'}
    a.out=false;
    if(n>8&&S.food<n*.15&&a.hun<30&&Math.random()<.002)this.die(a,'pergi mencari makan');
   });
@@ -1175,7 +1342,7 @@ class Game extends Phaser.Scene{
  dipOffer(v){v.ac=this.t+7200;this.dp=1;this.dps=this.si>0?1:0;this.si=0;showDip(this,v)}
  dipDone(v,a){this.dp=0;if(a){v.ally=1;v.att=Math.max(v.att,60);this.ev('Diplomasi: aliansi dengan Desa '+v.name+' terbentuk!')}else v.att-=8;this.vRel(v);if(!this.over)this.si=this.dps}
  raidEnd(r,win){if(this.bl){const q=this.bl.raids[this.bl.raids.length-1];if(q&&q.res===null)q.res=win?'menang':'kalah'}const v=r.v;if(!v)return;if(win){v.str=Math.max(3,v.str-1.5);v.att=Math.max(-100,v.att-4)}else{v.str=Math.min(30,v.str+.8);v.att=Math.min(100,v.att+2)}}
- spawnRaid(v){const T=this.tech,n=this.ag.length,e=R(0,6.28),sp0=v?{x:v.x,y:v.y}:this.outPt(1000,1400),sx=sp0.x,sy=sp0.y,k=v?Math.min(12,2+Math.round(v.str/3)):Math.min(10,3+Math.floor(n/10));
+ spawnRaid(v){const T=this.tech,n=this.ag.length,e=R(0,6.28),sp0=v?{x:v.x,y:v.y}:this.outPt(1000,1400),sx=sp0.x,sy=sp0.y,k=Math.max(1,Math.round((v?Math.min(12,2+Math.round(v.str/3)):Math.min(10,3+Math.floor(n/10)))*(1+(this.dk()-1)*.8)));
   this.raid={ph:0,sx,sy,l:[],v:v||null};this.rp=(this.rp||0)+1;this.bl.raids.push({d:Math.floor(this.t/24),from:v?v.name:'pengembara',n:k,res:null});for(let i=0;i<k;i++){const q=AST.on()?AST.rsprite(this,v,i,sx+R(-30,30),sy+R(-20,20)):put(this,'hero_r','s_i0',sx+R(-30,30),sy+R(-20,20)).setTint(v?v.tint:pick([0xffffff,0xcce0ff,0xffd8b0]));this.raid.l.push({s:q,x:q.x,y:q.y,pw:R(.7,1.4)*(T.smelt?1.4:1)*(v?Math.max(.8,v.str/8):1),hp:3,ic:this.mkRaidIcon(q.x,q.y)})}
   const ld=this.raid.l[0];ld.hp=6;ld.s.setScale((ld.s.asc||SC())*1.35);ld.cr=this.add.text(0,0,'♛',{fontSize:'14px',color:'#ff6a3a',stroke:'#000',strokeThickness:3}).setOrigin(.5).setDepth(5000);this.ev('Serangan: pasukan pengembara asing terlihat mendekat'+(v?' dari Desa '+v.name:' dari kejauhan')+'!')}
  econStep(T,S){const B=this.bld;
@@ -1195,6 +1362,7 @@ class Game extends Phaser.Scene{
   if(this.ag.length+k>Math.min(400,CFG.max))return;this.arrive(k,'Pendatang: '+k+' '+(job==='warrior'&&g.gj==='warrior'?'tentara bayaran':JOBS[job].n)+' datang karena kabar tentang '+g.name+' ('+(g.gj?GJ[g.gj].n:gen)+').',job)}
  dawn(){return Math.max(0,1-this.t/52560)}
  allTw(){const f=this.fc;return f?[...f.gates.flatMap(g=>g.tw||[]),...(f.ct||[])]:[]}
+ dk(){return(CFG&&CFG.diff)||1}
  kingBonus(){const k=this.king;if(!k)return 0;const f=this.fc,inn=f?pin(f.v,k.x,k.y):Math.hypot(k.x-CAMP.x,k.y-CAMP.y)<420;return inn?.1:0}
  towerPow(){let n=0;this.allTw().forEach(t=>{if(t.done)n++});return Math.min(.5,n*.06)}
  mkRaidIcon(x,y){const ic=this.add.image(x,y-56,'ico_raid').setScale(.55).setDepth(5000);this.tweens.add({targets:ic,alpha:{from:.55,to:1},duration:550,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});return ic}
@@ -1330,18 +1498,19 @@ function showFate(g){sfx('notify');const e=document.getElementById('fate'),p=g.f
 function endAsk(){const g=GM,e=document.getElementById('fate');if(!g||g.over||g.fp||g.ask||g.dp)return;g.ask=1;g.fs=g.si;g.si=0;e.className='bx doom';e.style.display='block';
  e.innerHTML='<span class="tag">⚠ Akhiri Era?</span><h3>Akhiri permainan sekarang dan lihat ringkasan peradaban?</h3><button id="ey">Ya, akhiri</button> <button id="en">Lanjut main</button>';
  document.getElementById('ey').onclick=()=>{e.style.display='none';g.ask=0;g.finish('Diakhiri lebih awal oleh pemain')};document.getElementById('en').onclick=()=>{e.style.display='none';g.ask=0;g.si=g.fs}}
-function showSplash(){const e=document.getElementById('ld'),t=document.getElementById('ldt');let done=0;
+function showSplash(){const e=document.getElementById('ld'),box=document.getElementById('ldlogo'),t=document.getElementById('ldt');let done=0;
  const start=()=>{if(done)return;done=1;removeEventListener('pointerdown',start);removeEventListener('keydown',start);e.classList.add('out');setTimeout(()=>{e.classList.remove('on');showSetup()},650)};
- const go=()=>{t.innerHTML='DOOM CIVIL'.split('').map((c,i)=>'<span style="--i:'+i+'">'+(c===' '?'&nbsp;':c)+'</span>').join('');e.classList.remove('out');e.classList.add('on');setTimeout(()=>{addEventListener('pointerdown',start);addEventListener('keydown',start)},1600)};
+ const go=()=>{loadLogo(src=>{if(src){box.innerHTML='<img id="ldimg" src="'+src+'" alt="Doom Civil">';t.innerHTML=''}else{box.innerHTML='';t.innerHTML='DOOM CIVIL'.split('').map((c,i)=>'<span style="--i:'+i+'">'+(c===' '?'&nbsp;':c)+'</span>').join('')}});e.classList.remove('out');e.classList.add('on');setTimeout(()=>{addEventListener('pointerdown',start);addEventListener('keydown',start)},1600)};
  Promise.race([document.fonts&&document.fonts.load?document.fonts.load('900 40px "Cinzel Decorative"'):Promise.resolve(),new Promise(r=>setTimeout(r,1200))]).then(go,go)}
-function showLoad(go){const e=document.getElementById('lg'),t0=Date.now();window.GAMEREADY=false;e.classList.remove('out');e.classList.add('on');Promise.all([Promise.race([loadMapAssets(),new Promise(r=>setTimeout(r,2000))]),new Promise(r=>setTimeout(r,900))]).then(()=>go());
+function showLoadLegacy(go){const e=document.getElementById('lg'),t0=Date.now();window.GAMEREADY=false;e.classList.remove('out');e.classList.add('on');Promise.all([Promise.race([loadMapAssets(),new Promise(r=>setTimeout(r,2000))]),new Promise(r=>setTimeout(r,900))]).then(()=>go());
  const iv=setInterval(()=>{const el=Date.now()-t0;if(el>=2800&&window.GAMEREADY||el>15000){clearInterval(iv);e.classList.add('out');setTimeout(()=>e.classList.remove('on'),450)}},100)}
-function showSetup(){
+function showSetupLegacy(){
  const s=document.getElementById('setup'),_sd=(s.style.display='block'),op=(a,f)=>a.map((x,i)=>'<option value="'+i+'">'+f(x)+'</option>').join('');
  s.innerHTML='<span class="tag">Permainan Baru</span><h2>Doom Civil</h2><div class="cols"><div class="col"><div class="r2"><label>Populasi awal (2–18)<input id="iN" type="number" min="2" max="18" value="4"></label><label>Laki-laki (sisanya perempuan)<input id="iM" type="number" min="1" max="17" value="2"></label><label>Target main (tahun game)<input id="iH" type="number" min="5" max="1000" step="5" value="100"></label><label>Target maks populasi (10–400)<input id="iX" type="number" min="10" max="400" value="400"></label></div><label>Ciri Khas Masyarakat<select id="iT">'+op(TEND,x=>x.n)+'</select><span class="hint" id="dT"></span></label><label>Terrain<select id="iTL"><option value="0">Prosedural (default)</option><option value="1">Tile map (uji coba)</option></select></label></div><div class="col"><label>Peta<select id="iP">'+op(MAPS,x=>x.n)+'</select><span class="hint" id="dP"></span><canvas id="mp" width="240" height="180" style="width:100%;aspect-ratio:4/3;margin-top:calc(.3*var(--q));image-rendering:pixelated;border:1px solid #8a6a3a"></canvas></label></div></div><div style="text-align:center;margin-top:calc(.8*var(--q))"><button id="go">Mulai Peradaban</button></div><div class="foot">Beta Version '+VERSION+' &copy; 2026 Monsta Media</div>';
  const $=i=>document.getElementById(i),ds=()=>{$('dP').textContent=MAPS[$('iP').value].d;drawMapPrev($('mp'),+$('iP').value);$('dT').textContent=TEND[$('iT').value].d};$('iP').onchange=$('iT').onchange=ds;ds();
  $('go').onclick=()=>{const N=cl(+$('iN').value|0||4,2,18),M=cl(+$('iM').value|0||1,1,N-1);CFG={pop:N,m:M,years:cl(+$('iH').value||100,5,1000),max:cl(+$('iX').value|0||400,10,400),map:+$('iP').value,tend:+$('iT').value,tile:$('iTL')?+$('iTL').value:0};
   MAP=MAPS[CFG.map];TD=TEND[CFG.tend];TR=pick(TRIBES);s.style.display='none';showLoad(()=>new Phaser.Game({type:Phaser.AUTO,parent:'g',width:W,height:H,pixelArt:true,backgroundColor:'#0f1a26',scale:{mode:Phaser.Scale.ENVELOP,autoCenter:Phaser.Scale.CENTER_BOTH},scene:[Game]}))};
 }
+pvInit();dragScroll(document.getElementById('era'));dragScroll(document.getElementById('sum'));
 showSplash();
 </script></body></html>
