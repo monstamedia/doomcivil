@@ -106,7 +106,313 @@ const SPRITE_OVERRIDES={};
 const TILE_OVERRIDES={}; /* HOOK TILE: TILE_OVERRIDES[jenis]={src:'data:image/png;base64,...',n:jumlahVarian}; strip horizontal tile 16x16. jenis: water,sand,dirt,grass,rock,snow */
 /* ERA_PACE: pengali ambang K semua teknologi. 1 = normal, 2 = zaman dua kali lebih lambat, .5 = dua kali lebih cepat */
 const ERA_PACE=1;
-const VERSION='v.11.50DEV';
+const VERSION='v.11.51DEV';
+/* ==== CORE ENGINE START =============================================== */
+const CharacterBirth = (() => {
+  const VERSION = '1.0.0';
+
+  /* ---------- Seeded RNG: string -> hash -> mulberry32 ---------- */
+  function xmur3(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19}
+    return()=>{h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);return(h^=h>>>16)>>>0}}
+  function mulberry32(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+  function makeRng(str){
+    const f = mulberry32(xmur3(String(str))());
+    return {
+      f,
+      int:(n)=>(f()*n)|0,
+      pick:(a)=>a[(f()*a.length)|0],
+      chance:(p)=>f()<p,
+      weighted:(o)=>{const ks=Object.keys(o);let t=0;ks.forEach(k=>t+=o[k]);let r=f()*t;for(const k of ks){r-=o[k];if(r<0)return k}return ks[ks.length-1]}
+    };
+  }
+
+  /* ---------- Warna ---------- */
+  const dk=(h,a=.78)=>'#'+[1,3,5].map(i=>Math.min(255,Math.round(parseInt(h.substr(i,2),16)*a)).toString(16).padStart(2,'0')).join('');
+  function hslToHex(h,s,l){l/=100;const a=s*Math.min(l,1-l)/100;const f=n=>{const k=(n+h/30)%12;const c=l-a*Math.max(Math.min(k-3,9-k,1),-1);return Math.round(255*c).toString(16).padStart(2,'0')};return`#${f(0)}${f(8)}${f(4)}`}
+  const mutedColor=(rng,lo,hi)=>hslToHex(rng.int(360),30+rng.int(40),lo+rng.int(hi-lo));
+
+  /* ---------- CONFIG (ubah = hasil birth code lama ikut berubah) ---------- */
+  const CONFIG = {
+    maleChance: .5,
+    skins: ['#f6c79a','#e8b08a','#d9a066','#b9794a','#8a5a3a','#e3a886','#593a2b'],
+    hairs: ['#2b1d14','#5a3a22','#8a5530','#c9a050','#d8d8d0','#a03a2a','#303a5a','#1e2430','#c25a3a','#e8d5a7'],
+    hairStyles: { M:{short:.4,spiky:.35,bald:.25}, F:{long:.4,bun:.3,short:.3} },
+    body: { none:.5, robe:.2, armor:.2, apron:.1 },                    // pakaian luar
+    head: { none:.65, hat:.1, wizhat:.05, helm:.1, goggles:.1 },       // topi/kepala
+    beardChance: .3,   // hanya pria
+    packChance: .2,    // tas punggung
+    topLight:   { M:[30,60], F:[30,70] },
+    pantsLight: { M:[20,40], F:[20,50] },
+    shoes: { M:['#d8d0c0','#4a3626'], F:['#e8e0d0','#5a4030'] }
+  };
+
+  /* ---------- Generator nama (silabel, asli, tanpa daftar karakter fiksi) ---------- */
+  const NM = {
+    germanic:{
+      pre:{M:['Ger','Wil','Ald','Rud','Ott','Gun','Hein','Leo','Bern','Con','Sieg','Wolf','Ulr','Hug','Os','Ans','Det','Lud'],
+           F:['Ade','Bri','Ger','Hil','Ing','Mat','Ot','Ros','Sig','Thea','Wil','Els','Ger','Am','Frei','Lui']},
+      suf:{M:['bert','helm','ric','mar','win','olf','ard','mund','ger','fried','an','o','hard','bald'],
+           F:['trud','hild','a','burg','linde','gard','rid','wyn','ke','la','ra','munda','lind']},
+      sur:{pre:['Eisen','Stein','Schwarz','Weiss','Gold','Berg','Wald','Hof','Bach','Brand','Roth','Kess','Lang','Stark','Falk','Haupt'],
+           suf:['berg','stein','mann','hoff','feld','bach','ner','er','ling','wald','schild','hammer']}
+    },
+    slavic:{
+      pre:{M:['Bor','Mir','Rad','Vlad','Stan','Yar','Dra','Zdi','Bog','Lud','Voj','Vel','Kaz','Dob','Rat'],
+           F:['Mil','Zla','Svet','Ves','Dra','Rad','Lyu','Nad','Ste','Bog','Vla','Mir']},
+      suf:{M:['imir','slav','mir','ek','an','ko','omil','gor','ush','ik','ar','od','im'],
+           F:['a','ka','mila','slava','ena','ina','ica','ya','omira','dana']},
+      sur:{stem:['Volk','Kov','Petr','Mor','Zhel','Bor','Sokol','Kras','Gorn','Dub','Lis','Medved','Bel','Chern'],
+           M:['ov','ski','ic','enko','ev','in'], F:['ova','ska','ic','enko','eva','ina']}
+    },
+    roman:{
+      pre:{M:['Aur','Cass','Dom','Fab','Gai','Luc','Marc','Quint','Sev','Tit','Val','Aem','Cat','Pub','Sext'],
+           F:['Aur','Cla','Fla','Iul','Liv','Luc','Oct','Pomp','Sab','Val','Aem','Corn','Tert']},
+      suf:{M:['ius','us','ianus','o','ilius','inus','ax','anus'],
+           F:['ia','illa','ina','ora','ana','a','ella']},
+      sur:{list:['Rufus','Felix','Maximus','Priscus','Varro','Nerva','Crispus','Brutus','Gracchus','Lentulus','Naso','Cicero','Flaccus','Piso','Severus','Celer']}
+    },
+    mono:{
+      on:['B','D','F','G','H','K','L','M','N','R','S','T','V','W','Z','Br','Dr','Gr','Kr','St','Sv','Vl','Tr','Kl'],
+      vo:['a','e','i','o','u'],
+      coM:['lf','rk','rt','ns','nd','x','k','d','t','ll','rn','ld','rs','ck','z','g','s','n','l'],
+      coF:['n','v','s','ll','t','z','th','ss','nn','d','r','m','na','la','ra'],
+      open:['ea','ae','ia','ie','a','e']
+    }
+  };
+  const STYLES = ['germanic','slavic','roman','mono'];
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  const join = (a,b) => (a.slice(-1).toLowerCase()===b.charAt(0).toLowerCase() ? a + b.slice(1) : a + b);
+
+  function makeName(rng, g, style, withSurname){
+    if (style === 'mono'){
+      const T = NM.mono; let n;
+      if (g==='F' && rng.chance(.25)) n = rng.pick(T.on) + rng.pick(T.open);
+      else n = rng.pick(T.on) + rng.pick(T.vo) + rng.pick(g==='M'?T.coM:T.coF);
+      return cap(n);
+    }
+    const S = NM[style];
+    const first = cap(join(rng.pick(S.pre[g]), rng.pick(S.suf[g])));
+    if (!withSurname) return first;
+    let last;
+    if (style==='germanic') last = cap(join(rng.pick(S.sur.pre), rng.pick(S.sur.suf)));
+    else if (style==='slavic') last = cap(join(rng.pick(S.sur.stem), rng.pick(S.sur[g])));
+    else last = rng.pick(S.sur.list);
+    return first + ' ' + last;
+  }
+
+  /* ---------- Birth code ----------  format:  seed[~g:M|F][~n:style][~s:1]  */
+  const clean = s => String(s).replace(/~/g,'-');
+  function buildCode(o){
+    let c = clean(o.seed);
+    if (o.gender === 'M' || o.gender === 'F') c += '~g:' + o.gender;
+    if (o.style && o.style !== 'mixed') c += '~n:' + o.style;
+    if (o.surname) c += '~s:1';
+    return c;
+  }
+  function parseCode(code){
+    const parts = String(code).split('~'), o = { seed: parts[0], gender:null, style:'mixed', surname:false };
+    parts.slice(1).forEach(p => { const [k,v] = p.split(':'); if(k==='g') o.gender=v; else if(k==='n') o.style=v; else if(k==='s') o.surname = v==='1' });
+    return o;
+  }
+  const randomSeed = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+  const hash36 = s => xmur3(s)().toString(36).padStart(7,'0');
+
+  /* ---------- Inti kelahiran ---------- */
+  function fromCode(code){
+    const o = parseCode(code), rng = makeRng(code), C = CONFIG;
+    const gender = o.gender || (rng.chance(C.maleChance) ? 'M' : 'F');
+    const style = (o.style && o.style !== 'mixed' && NM[o.style]) ? o.style : rng.pick(STYLES);
+    const name = makeName(rng, gender, style, o.surname);
+
+    const hairStyle = rng.weighted(C.hairStyles[gender]);
+    const skin = rng.pick(C.skins), hair = rng.pick(C.hairs);
+    const top = mutedColor(rng, ...C.topLight[gender]);
+    const pants = mutedColor(rng, ...C.pantsLight[gender]);
+    const [shoe, shoeShade] = C.shoes[gender];
+
+    const traits = [];
+    const body = rng.weighted(C.body);
+    if (body==='robe') traits.push({k:'robe', c:mutedColor(rng,20,50)});
+    else if (body==='armor') traits.push({k:'armor', c:'#a8b0c0'});
+    else if (body==='apron') traits.push({k:'apron', c:'#f0ead8'});
+    const head = rng.weighted(C.head);
+    if (head==='hat') traits.push({k:'hat', c:mutedColor(rng,20,40)});
+    else if (head==='wizhat') traits.push({k:'wizhat', c:mutedColor(rng,10,30)});
+    else if (head==='helm') traits.push({k:'helm', c:'#9aa4b8'});
+    else if (head==='goggles') traits.push({k:'goggles', c:'#3ec8e8'});
+    if (gender==='M' && rng.chance(C.beardChance)) traits.push({k:'beard', c: rng.chance(.75) ? hair : rng.pick(C.hairs)});
+    if (rng.chance(C.packChance)) traits.push({k:'pack', c:null});
+
+    return { id:'B-'+hash36(String(code)), code:String(code), name, gender, set:'GEN', origin:style,
+             appearance:{ skin, hair, hairStyle, top, pants, shoe, shoeShade }, traits };
+  }
+
+  function generate(o = {}){
+    return fromCode(buildCode({ seed: o.seed != null ? o.seed : randomSeed(), gender:o.gender, style:o.style, surname:o.surname }));
+  }
+
+  const signature = c => JSON.stringify([c.appearance, c.traits]);
+  function batch(n, o = {}){
+    const seed = o.seed != null ? o.seed : randomSeed(), unique = o.unique !== false;
+    const out = [], names = new Set(), looks = new Set();
+    for (let i = 0; i < n; i++){
+      let c;
+      for (let a = 0; a < 40; a++){
+        c = generate({ gender:o.gender, style:o.style, surname:o.surname, seed: `${seed}:${i}` + (a ? '#'+a : '') });
+        if (!unique || (!names.has(c.name) && !looks.has(signature(c)))) break;
+      }
+      names.add(c.name); looks.add(signature(c)); out.push(c);
+    }
+    return out;
+  }
+
+  /* ---------- Export (skema sama dengan asteria_characters.json) ---------- */
+  function toJSON(chars){
+    return { meta:{ library:'Asteria Character Library (Birth Engine export)', engine:VERSION, total:chars.length,
+        sprite:{ frameSize:[18,23], directions:{0:'down',1:'up',2:'right',3:'left (mirror of 2)'}, frames:{0:'idle',1:'walk-A',3:'walk-B'}, walkSequence:[1,0,3,0] },
+        traitKeys:{ goggles:'head', hat:'head', wizhat:'head', helm:'head', beard:'face', robe:'body', armor:'body', apron:'body', pack:'back' } },
+      characters: chars };
+  }
+
+  /* ---------- Renderer sprite pixel 18x23 ---------- */
+  const TRT = {
+    goggles:[3,(r,dd,dy,p,c)=>{r(3,3+dy,10,2,'#2a2a38');if(dd==0)[4,9].forEach(x=>{r(x,2+dy,3,3,'#8a8e9e');r(x+1,3+dy,1,1,c);r(x,2+dy,1,1,'#e8ecf4')});else if(dd==2){r(3,2+dy,3,3,'#8a8e9e');r(4,3+dy,1,1,c);r(3,2+dy,1,1,'#e8ecf4')}}],
+    pack:[1,(r,dd,dy)=>{if(dd==1){r(2,9+dy,12,2,'#6f8a6a');r(2,9+dy,12,1,'#8fae88');r(3,11+dy,10,7,'#8a5a34');r(3,11+dy,10,2,'#b88450');r(12,11+dy,1,7,'#5a3a20');r(7,13+dy,2,2,'#e0c060')}else if(dd==2){r(11,9+dy,4,2,'#6f8a6a');r(11,11+dy,4,7,'#8a5a34');r(11,11+dy,4,2,'#b88450');r(13,13+dy,1,2,'#e0c060')}else{r(1,12+dy,1,4,'#8a5a34');r(14,12+dy,1,4,'#8a5a34');r(5,12+dy,1,4,'#5a3a20');r(10,12+dy,1,4,'#5a3a20')}}],
+    apron:[1,(r,dd,dy,p,c)=>{if(dd==0)r(5,13+dy,6,4,c);else if(dd==2)r(4,13+dy,3,4,c);else r(7,15+dy,2,1,c)}],
+    robe:[1,(r,dd,dy,p,c)=>{r(3,14+dy,10,5,c);r(10,14+dy,3,5,dk(c));r(3,18,10,1,dk(c,.6))}],
+    armor:[1,(r,dd,dy,p,c)=>{r(3,12+dy,3,2,c);r(10,12+dy,3,2,dk(c,.8));if(dd!=1)r(5,13+dy,6,3,c);r(5,13+dy,2,1,'#e8ecf4')}],
+    beard:[2,(r,dd,dy,p,c)=>{if(dd==0){r(4,10+dy,8,3,c);r(6,12+dy,4,1,c)}else if(dd==2)r(3,10+dy,5,3,c)}],
+    hat:[3,(r,dd,dy,p,c)=>{r(2,3+dy,12,2,c);r(4,0+dy,8,3,c);r(4,2+dy,8,1,dk(c))}],
+    wizhat:[3,(r,dd,dy,p,c)=>{r(1,3+dy,14,2,c);r(3,2+dy,10,1,c);r(5,0+dy,6,2,c);r(7,-1+dy,3,1,c);r(10,1+dy,3,3,dk(c));r(5,2+dy,6,1,'#f0d848')}],
+    helm:[3,(r,dd,dy,p,c)=>{r(3,1+dy,10,4,c);r(4,0+dy,8,1,c);r(9,1+dy,4,4,dk(c,.8));r(2,4+dy,12,1,dk(c,.7));if(dd==0)r(7,4+dy,2,4,dk(c,.85))}]
+  };
+
+  function hydrate(c){
+    const a = c.appearance;
+    return Object.assign({}, c, { hs:a.hairStyle, skin:a.skin, hair:a.hair, top:a.top, pants:a.pants, shoe:a.shoe, shoeS:a.shoeShade,
+      skinS:dk(a.skin,.86), hairS:dk(a.hair), topS:dk(a.top), sleeve:a.top, sleeveS:dk(a.top), belt:dk(a.pants,.7), tr:c.traits });
+  }
+  const HY = new WeakMap();
+  const ensure = c => c.tr && c.hs ? c : (HY.get(c) || (HY.set(c, hydrate(c)), HY.get(c)));
+
+  let SC = {}, SCN = 0;
+  function clearCache(){ SC = {}; SCN = 0 }
+
+  function getFrame(char, d, fr){
+    const p = ensure(char), k = (p.code || p.id) + '|' + d + '|' + fr;
+    if (SC[k]) return SC[k];
+    if (SCN > 6000) clearCache();
+    let cs = document.createElement('canvas'); cs.width = 18; cs.height = 23;
+    const g = cs.getContext('2d', { willReadFrequently:true });
+    const r = (x,y,w,h,c) => { g.fillStyle = c; g.fillRect(x+1,y+1,w,h) };
+    const dd = d==3?2:d, E='#202028', A=fr==1, B=fr==3, dy=(A||B)?1:0, sw=A?1:B?-1:0, tr=p.tr;
+    const L = n => tr.forEach(t => { const e = TRT[t.k]; if (e && e[0]==n) e[1](r,dd,dy,p,t.c) });
+    const leg = (x,lift) => { const bt = lift?18:20; r(x,17+dy,2,bt-17-dy,p.pants); r(x-1,bt-2,4,1,p.shoe); r(x-1,bt-1,4,1,p.shoeS) };
+    if (dd==2){ leg(5+(A?-2:B?1:0),A); leg(8+(B?2:A?-1:0),B) } else { leg(5-(A?1:0),A); leg(9+(B?1:0),B) }
+    r(4,12+dy,8,5,p.top); r(10,12+dy,2,5,p.topS); r(4,16+dy,8,1,p.belt);
+    if (dd==2){ const ax=6+(A?-2:B?2:0); r(ax,13+dy,3,3,p.sleeve); r(ax,16+dy,3,1,p.skin) }
+    else { r(2,13+dy,2,4,p.sleeve); r(12,13+dy,2,4,p.sleeveS); r(2,17+dy,2,1,p.skin); r(12,17+dy,2,1,p.skinS) }
+    if (dd==0){ r(7,12+dy,1,4,p.topS); r(5,12+dy,6,1,p.skinS) }
+    L(1);
+    r(3,6+dy,10,6,p.skin); r(3,11+dy,10,1,p.skinS);
+    if (dd==0){ r(5,8+dy,2,3,E); r(9,8+dy,2,3,E); r(5,8+dy,1,1,'#fff'); r(9,8+dy,1,1,'#fff'); r(4,10+dy,1,1,'#f09a8a'); r(11,10+dy,1,1,'#f09a8a'); r(7,11+dy,2,1,'#b0604a') }
+    else if (dd==2){ r(4,8+dy,2,3,E); r(4,8+dy,1,1,'#fff'); r(3,10+dy,1,1,'#f09a8a'); r(3,11+dy,2,1,'#b0604a') }
+    const hc=p.hair, hd=p.hairS, st=p.hs, sp = xs => xs.forEach((x,i) => r(x,-1+dy+(i%2),2,2,i>1?hd:hc));
+    if (st!='bald'){
+      if (dd==0){ r(3,1+dy,10,4,hc); r(4,0+dy,8,1,hc); r(10,1+dy,3,4,hd); r(3,5+dy,2,1,hc); r(7,5+dy,2,1,hc); r(11,5+dy,2,1,hd); r(2,5+dy,1,4,hc); r(13,5+dy,1,4,hd);
+        if(st=='spiky'){sp([3,6,9,11]); r(1-(A?1:0),8+dy,2,2,hc); r(13+(B?1:0),8+dy,2,2,hd)} if(st=='long'){r(2,5+dy,2,8,hc); r(12,5+dy,2,8,hd)} if(st=='bun') r(6,-1+dy,4,2,hc) }
+      else if (dd==1){ r(3,1+dy,10,10,hc); r(10,1+dy,3,10,hd); r(4,0+dy,8,1,hc); r(5,3+dy,3,1,'#ffffff30');
+        if(st=='spiky'){sp([3,6,9,11]); r(6+sw*2,11+dy,3,3,hd); r(7+sw*3,13+dy,2,2,hd)} if(st=='long') r(4,11+dy,8,4,hc); if(st=='bun') r(6,-1+dy,4,2,hc) }
+      else { r(3,1+dy,10,4,hc); r(4,0+dy,8,1,hc); r(9,3+dy,4,7,hd); r(3,5+dy,3,1,hc);
+        if(st=='spiky'){sp([4,7,10]); r(11+(sw>0?1:0),9+dy,3,2,hd); r(12+sw,11+dy,2,2,hd)} if(st=='long') r(9,5+dy,4,9,hd); if(st=='bun') r(6,-1+dy,4,2,hc) }
+    }
+    L(2); L(3);
+    const im = g.getImageData(0,0,18,23).data, o = [];
+    for (let y=0;y<23;y++) for (let x=0;x<18;x++){
+      if (im[(y*18+x)*4+3]) continue;
+      if ([[1,0],[-1,0],[0,1],[0,-1]].some(([a,e]) => { const X=x+a, Y=y+e; return X>=0&&Y>=0&&X<18&&Y<23&&im[(Y*18+X)*4+3] })) o.push([x,y]);
+    }
+    o.forEach(([x,y]) => { g.fillStyle='#1e1e2a'; g.fillRect(x,y,1,1) });
+    if (d==3){ const m=document.createElement('canvas'); m.width=18; m.height=23; const mg=m.getContext('2d'); mg.translate(18,0); mg.scale(-1,1); mg.drawImage(cs,0,0); cs=m }
+    SC[k] = cs; SCN++;
+    return cs;
+  }
+
+  function draw(char, d, fr, ctx, x, y, scale = 1){
+    const cs = getFrame(char, d, fr);
+    ctx.save(); ctx.imageSmoothingEnabled = false; ctx.scale(scale, scale); ctx.drawImage(cs, x/scale, y/scale); ctx.restore();
+  }
+
+  return { VERSION, CONFIG, NAMES:NM, STYLES, WALK_SEQ:[1,0,3,0],
+           generate, fromCode, batch, toJSON, hydrate, getFrame, draw, clearCache, randomSeed };
+})();
+if (typeof module !== 'undefined') module.exports = CharacterBirth;
+/* ==== CORE ENGINE END ================================================= */
+/* ===================== ADAPTOR ASTERIA -> DoomCivil (v11.51) =====================
+   Mesin Asteria (blok inti di atas, tidak diubah) menggantikan SELURUH pembuatan karakter:
+   penampilan, nama, aksesoris, rambut. Tekstur per karakter memakai nama frame yang sama dengan sheet lama
+   (d_i0, s_w2, u_a1, r0...), sehingga loop animasi lama tetap bekerja.
+   USE_ASTERIA=false -> kembali ke sprite lama (hero_m / hero_f0..2 / hero_r). */
+const USE_ASTERIA=true;
+const AST_STYLE=['roman','mono','slavic','germanic','roman','slavic','germanic','mono'];
+const AST_KIND={
+ villager:{body:{none:.55,robe:.2,apron:.25},head:{none:.7,hat:.2,goggles:.1},beard:.3,pack:.1},
+ raider:{body:{armor:.7,robe:.1,none:.2},head:{helm:.7,hat:.1,none:.2},beard:.5,pack:.2},
+ trader:{body:{none:.5,robe:.3,apron:.2},head:{none:.5,hat:.4,goggles:.1},beard:.3,pack:.6}};
+const AST_HAIRP=[{n:'rambut hitam',h:['#2b1d14','#1e2430']},{n:'rambut cokelat',h:['#5a3a22','#8a5530']},{n:'rambut pirang',h:['#c9a050','#e8d5a7']},{n:'rambut merah',h:['#a03a2a','#c25a3a']},{n:'rambut putih/abu',h:['#d8d8d0','#e0e0d8']},{n:'rambut biru malam',h:['#303a5a','#1e2430']}];
+const AST_SKINP=[{n:'kulit terang',s:['#f6c79a','#e3a886']},{n:'kulit sawo muda',s:['#e8b08a','#d9a066']},{n:'kulit sawo tua',s:['#b9794a','#8a5a3a']},{n:'kulit gelap',s:['#8a5a3a','#593a2b']}];
+const AST_SLOT={robe:'body',armor:'body',apron:'body',hat:'head',wizhat:'head',helm:'head',goggles:'head',pack:'back',beard:'face'};
+const AST_JT={hunter:[['pack',null]],forager:[['pack',null]],farmer:[['hat','#c9a050']],warrior:[['armor','#c9ced8'],['helm','#9aa4b8']],blacksmith:[['apron','#f0ead8']],scholar:[['robe','#3a4a8a']],priest:[['robe','#e8e4f0']]};
+const AST={
+ on(){return USE_ASTERIA&&!['hero_m','hero_f0','hero_f1','hero_f2','hero_r'].some(k=>SPRITE_OVERRIDES[k])},
+ hexn(n){return '#'+('000000'+(n>>>0).toString(16)).slice(-6)},
+ rgb(h){return[1,3,5].map(i=>parseInt(h.substr(i,2),16))},
+ mix(a,b,t){const A=this.rgb(a),B=this.rgb(b);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('')},
+ shade(h,f){return '#'+this.rgb(h).map(v=>Math.min(255,Math.round(v*f)).toString(16).padStart(2,'0')).join('')},
+ /* penciptaan karakter acak lewat Asteria; kind = preset aksesoris, cul = palet budaya desa (rambut/kulit) */
+ gen(o){o=o||{};const C=CharacterBirth.CONFIG,K=AST_KIND[o.kind||'villager'],sv={body:C.body,head:C.head,beardChance:C.beardChance,packChance:C.packChance,skins:C.skins,hairs:C.hairs};let c;
+  try{C.body=K.body;C.head=K.head;C.beardChance=K.beard;C.packChance=K.pack;if(o.cul){C.skins=o.cul.skins;C.hairs=o.cul.hairs}
+   c=CharacterBirth.generate({gender:o.sex==='f'?'F':'M',style:o.style||'mixed',surname:o.surname!==false,seed:o.seed})}finally{Object.assign(C,sv)}return c},
+ setTop(p,h){p.top=h;p.sleeve=h;p.topS=this.shade(h,.78);p.sleeveS=this.shade(h,.78)},
+ hyd(c,o){o=o||{};const p=CharacterBirth.hydrate(c);p.base=c.code;p.tr0=(c.traits||[]).map(t=>({k:t.k,c:t.c}));p.tr=p.tr0.map(t=>({k:t.k,c:t.c}));if(o.top)this.setTop(p,this.mix(p.top,o.top,o.k==null?.5:o.k));p.top0=p.top;return p},
+ uniq(g,nm){const U=g.nmUsed=g.nmUsed||new Set();let n=nm,i=2;while(U.has(n))n=nm+' '+(i++);U.add(n);return n},
+ person(g,a){const ti=Math.max(0,TRIBES.indexOf(TR)),st=AST_STYLE[ti%AST_STYLE.length],U=g.nmUsed=g.nmUsed||new Set();let c=null;
+  for(let i=0;i<40;i++){c=this.gen({sex:a.sex,kind:'villager',style:st,surname:true});if(!U.has(c.name))break}
+  const p=this.hyd(c,{top:this.hexn(a.sex==='m'?TR.m:TR.f),k:.5});p.name=a.name=this.uniq(g,c.name);a.ast=p;return p},
+ childName(g,sex,m,f){const U=g.nmUsed=g.nmUsed||new Set(),ti=Math.max(0,TRIBES.indexOf(TR)),st=AST_STYLE[ti%AST_STYLE.length],par=(f&&f.name)||(m&&m.name)||'',sur=par.split(' ').slice(1).join(' ');let nm='';
+  for(let i=0;i<40;i++){const c=this.gen({sex,kind:'villager',style:st,surname:false});nm=sur?c.name+' '+sur:c.name;if(!U.has(nm))break}return this.uniq(g,nm)},
+ /* tekstur sheet per karakter: 27 frame (d/u/s x idle2,walk4,kerja3) + 4 frame guling (r0..r3) */
+ sheet(s,key,p){const cw=18,ch=23,cols=9,names=[],DM={d:0,u:1,s:2},WS=[1,0,3,0];
+  for(const d of'dus')for(const [x,n] of [['i',2],['w',4],['a',3]])for(let i=0;i<n;i++)names.push(d+'_'+x+i);for(let i=0;i<4;i++)names.push('r'+i);
+  const rows=Math.ceil(names.length/cols);let cv=document.createElement('canvas');cv.width=cw*cols;cv.height=ch*rows;const c=cv.getContext('2d');c.imageSmoothingEnabled=false;const F=(d,fr)=>CharacterBirth.getFrame(p,d,fr);
+  names.forEach((n,idx)=>{const px=(idx%cols)*cw,py=((idx/cols)|0)*ch;
+   if(n[0]==='r'){c.save();c.beginPath();c.rect(px,py,cw,ch);c.clip();c.translate(px+9,py+12);c.rotate(+n[1]*Math.PI/2);c.scale(.78,.78);c.drawImage(F(0,0),-9,-12);c.restore();return}
+   const d=DM[n[0]],t=n[2],i=+n[3];
+   if(t==='i')c.drawImage(F(d,0),px,py);
+   else if(t==='w')c.drawImage(F(d,WS[i]),px,py);
+   else{c.drawImage(F(d,[0,1,3][i]),0,0,cw,18,px,py,cw,18);c.drawImage(F(d,0),0,18,cw,5,px,py+18,cw,5)}});
+  let m=1;if(MODE===1){cv=epx(cv);m=2}
+  if(s.textures.exists(key))s.textures.remove(key);const tx=s.textures.addCanvas(key,cv);names.forEach((n,i)=>tx.add(n,0,(i%cols)*cw*m,((i/cols)|0)*ch*m,cw*m,ch*m));if(MODE===1)tx.setFilter(Phaser.Textures.FilterMode.LINEAR);SH[key]={cw,ch,fy:21,m};return m},
+ attach(g,a,p){const key='ast'+a.id+'_'+(a.arev=(a.arev|0)+1),m=this.sheet(g,key,p);a.ast=p;a.astKey=key;a.asc=PX/m;return key},
+ put(g,a,f,x,y){const key=this.attach(g,a,a.ast);return g.add.image(x,y,key,f).setScale(a.asc).setOrigin(.5,21/23)},
+ swap(g,a){const old=a.astKey;this.attach(g,a,a.ast);a.spr.setTexture(a.astKey,'d_i0');if(old&&g.textures.exists(old))g.textures.remove(old)},
+ /* pakaian pekerjaan: aksesoris + warna baju sesuai job (menggantikan overlay 'hk' lama) */
+ job(g,a,J,k){const p=a.ast;if(!p)return;const add=AST_JT[k]||[],slots=new Set(add.map(t=>AST_SLOT[t[0]]));
+  p.tr=p.tr0.filter(t=>!slots.has(AST_SLOT[t.k])).map(t=>({k:t.k,c:t.c})).concat(add.map(t=>({k:t[0],c:t[1]})));
+  p.top=p.top0;this.setTop(p,this.mix(p.top0,this.hexn(J.col),.6));p.code=p.base+'~'+k;if(a.spr)this.swap(g,a)},
+ budaya(i,off){const hp=AST_HAIRP[(i+off)%AST_HAIRP.length],sp=AST_SKINP[(i*3+off)%AST_SKINP.length];return{style:CharacterBirth.STYLES[(i+off)%4],hn:hp.n,sn:sp.n,hairs:hp.h,skins:sp.s}},
+ pooled(g,pool,idx,o,top){let e=pool[idx];if(!e){const p=this.hyd(this.gen(o),{top,k:.7}),key='astP'+(g.apn=(g.apn|0)+1);const m=this.sheet(g,key,p);e={key,m,p};pool[idx]=e}return e},
+ spr(g,e,x,y,sc){return g.add.image(x,y,e.key,'s_i0').setScale(PX/e.m*(sc||1)).setOrigin(.5,21/23)},
+ rsprite(g,v,i,x,y){const pool=v?(v.rv=v.rv||[]):(g.rvw=g.rvw||[]),e=this.pooled(g,pool,i%6,{sex:Math.random()<.75?'m':'f',kind:'raider',cul:v&&v.cul,style:v&&v.cul?v.cul.style:pick(CharacterBirth.STYLES),surname:false},v?this.hexn(v.col):'#7a2a2a'),q=this.spr(g,e,x,y);q.asc=PX/e.m;return q},
+ tsprite(g,v,i,x,y){const pool=v.tv=v.tv||[],e=this.pooled(g,pool,i%4,{sex:i===0?'m':'f',kind:'trader',cul:v.cul,style:v.cul?v.cul.style:'mixed',surname:false},this.hexn(v.col)),q=this.spr(g,e,x,y);q.asc=PX/e.m;return q},
+ archer(g,x,y){const pool=g.arch=g.arch||[],e=this.pooled(g,pool,pool.length<3?pool.length:(Math.random()*3)|0,{sex:'m',kind:'raider',surname:false},'#b8c0d0'),q=this.spr(g,e,x,y,.85);q.asc=PX/e.m*.85;return q},
+ /* panji desa: kain berwarna desa + lambang (lingkaran/segitiga/salib/chevron) */
+ banner(g,v){const key='ban'+v.id+'_'+(v.bnr=(v.bnr|0)+1);if(g.textures.exists(key))g.textures.remove(key);const cv=document.createElement('canvas');cv.width=22;cv.height=27;const c=cv.getContext('2d'),A=this.hexn(v.col),B=this.hexn(v.col2!=null?v.col2:0xf0e2c0);
+  c.fillStyle=A;c.fillRect(0,0,22,21);c.beginPath();c.moveTo(0,21);c.lineTo(11,27);c.lineTo(22,21);c.closePath();c.fill();c.fillStyle=this.shade(A,.72);c.fillRect(0,0,22,2);c.fillRect(0,19,22,2);c.fillStyle=B;
+  const e=(v.id|0)%4;if(e===0){c.beginPath();c.arc(11,11,5,0,6.2832);c.fill()}else if(e===1){c.beginPath();c.moveTo(11,5);c.lineTo(17,16);c.lineTo(5,16);c.closePath();c.fill()}else if(e===2){c.fillRect(9,5,4,13);c.fillRect(4,9,14,4)}else{c.beginPath();c.moveTo(4,7);c.lineTo(11,14);c.lineTo(18,7);c.lineTo(18,11);c.lineTo(11,18);c.lineTo(4,11);c.closePath();c.fill()}
+  g.textures.addCanvas(key,cv);return key}
+};
+
 /* ===================== AUDIO: BGM shuffle + SFX =====================
    Folder:  assets/bgm/  (musik, shuffle otomatis)   assets/sfx/  (click, notify, alert)
    Tidak ada file -> tidak ada suara & tidak ada error. */
@@ -150,7 +456,7 @@ document.addEventListener('visibilitychange',()=>{try{if(GM)GM._hid=document.hid
 const BL_COLS=['day','pop','adult','kid','food','wood','stone','iron','hunAvg','hunMin','enAvg','hpAvg','hungry','outside','K','era','herd','fields','ripe','huts','cap','towers','jobs','act','season','wx','foodIn','eaten','scav','ff'];
 function blNew(g){return{rows:[],ev:[],deaths:[],fates:[],raids:[],eras:[],b:0,fin:0,eat:0,scav:0,last:-9,t0:Date.now()}}
 function blEv(g,m){const b=g.bl;if(!b)return;if(b.ev.length>4200)b.ev.splice(600,1);b.ev.push([Math.floor(g.t/24),String(m).replace(/<[^>]*>/g,'')])}
-function blDie(g,a,why){const b=g.bl;if(!b)return;b.deaths.push({d:Math.floor(g.t/24),n:a.name,ff:a.ff?1:0,gj:a.gj||null,sx:a.sex,y:Math.floor(a.age/365/SIMF),job:a.age<5110?'anak':(a.job||'-'),why:why||'lainnya',hun:Math.round(a.hun),en:Math.round(a.en),hp:Math.round(a.hp),task:a.sl?'sleep':(a.task?a.task.k:null),dist:Math.round(Math.hypot(a.x-CAMP.x,a.y-CAMP.y)),pop:g.ag.length,food:Math.round(g.S.food*10)/10})}
+function blDie(g,a,why){const b=g.bl;if(!b)return;b.deaths.push({d:Math.floor(g.t/24),n:a.name,ff:a.ff?1:0,gj:a.gj||null,ac:(a.ast&&a.ast.base)||null,sx:a.sex,y:Math.floor(a.age/365/SIMF),job:a.age<5110?'anak':(a.job||'-'),why:why||'lainnya',hun:Math.round(a.hun),en:Math.round(a.en),hp:Math.round(a.hp),task:a.sl?'sleep':(a.task?a.task.k:null),dist:Math.round(Math.hypot(a.x-CAMP.x,a.y-CAMP.y)),pop:g.ag.length,food:Math.round(g.S.food*10)/10})}
 function blSnap(g){const b=g.bl;if(!b)return;const day=Math.floor(g.t/24);if(day-b.last<3)return;b.last=day;const A=g.ag,ad=A.filter(a=>a.age>=5110),act={};let hs=0,hm=100,es=0,ps=0,hu=0,out=0;
   A.forEach(a=>{hs+=a.hun;hm=Math.min(hm,a.hun);es+=a.en;ps+=a.hp;if(a.hun<30)hu++;if(a.sl&&!a.shel)out++});ad.forEach(a=>{const k=a.sl?'sleep':(a.task?a.task.k:'none');act[k]=(act[k]||0)+1});
   const n=Math.max(1,A.length),S=g.S,tw=g.allTw?g.allTw().filter(t=>t.done).length:0;
@@ -168,7 +474,7 @@ function blSummary(g){const b=g.bl,D=b.deaths,by=f=>{const o={};D.forEach(x=>{co
 function blBuild(g){const b=g.bl,o={format:'doomcivil-backlog',schema:2,game:VERSION,diekspor:new Date().toISOString(),
   petunjuk:'File ini dibuat otomatis untuk analisis balance. rows[] = potret tiap ~3 hari game, urutan kolom di columns[]. events[] = [hari,teks]. deaths[] = tiap kematian (penyebab, kondisi saat wafat, jarak dari api unggun). act = jumlah dewasa per jenis tugas, jobs = jumlah per job, foodIn = pangan masuk gudang sejak potret sebelumnya, eaten = jumlah porsi dimakan, scav = makan darurat.',
   meta:{peta:MAP.n,suku:TR.n,ciri_khas:TEND[CFG.tend].n,pop_awal:CFG.pop,laki_awal:CFG.m,target_tahun:CFG.years,satuan_hari:'1 hari game = 24 jam game; K = Skor Ekonomi'},
-  ringkasan:blSummary(g),columns:BL_COLS,rows:b.rows,events:b.ev,deaths:b.deaths,fates:b.fates,raids:b.raids,
+  ringkasan:blSummary(g),engine_karakter:'Asteria '+CharacterBirth.VERSION,desa_ai:(g.vil||[]).map(v=>({nama:v.name,pemimpin:v.leader,sifat:v.trait,skala:v.sz,zaman:ERA[Math.min(8,v.eraF|0)],pop:v.pop,pasukan:v.army,kekuatan:Math.round(v.str*10)/10,sikap:Math.round(v.att),dikenal:!!v.known,sekutu:!!v.ally,budaya:v.cul&&{gaya_nama:v.cul.style,rambut:v.cul.hn,kulit:v.cul.sn},sumber_daya:Object.fromEntries(Object.entries(v.res||{}).map(([k,x])=>[k,Math.round(x)]))})),columns:BL_COLS,rows:b.rows,events:b.ev,deaths:b.deaths,fates:b.fates,raids:b.raids,
   akhir:{teknologi:Object.keys(g.tech),bangunan:Object.keys(g.bld),pangan:Math.round(g.S.food),ladang:g.fields.length,ternak:g.herd|0,hunian:g.huts.length,jobs:g.jobN||{}}};return o}
 function blJson(g){return JSON.stringify(blBuild(g))}
 function blExport(g){try{g=g||GM;if(!g||!g.bl)return;const txt=blJson(g),name='doomcivil-backlog_'+String(MAP.n).replace(/[^a-z0-9]+/gi,'-')+'_'+new Date().toISOString().slice(0,16).replace(/[:T]/g,'-')+'.json';window.__BL_LAST=txt;
@@ -536,8 +842,8 @@ class Game extends Phaser.Scene{
  tal(){const q=td('iq');return{craft:cl(R(.5,1.5)*q,.3,2),hunt:R(.5,1.5),farm:R(.5,1.5),herd:R(.5,1.5),trade:R(.5,1.5),war:R(.3,1.5),mind:R(.4,1.6),fora:R(.4,1.6),faith:R(.3,1.5)}}
  mkAgent(sex,age,x,y,tl,gen){
   const a={id:++this.nid,sex,age,x,y,hun:85,en:90,hp:100,task:null,sl:false,out:false,work:false,walk:false,dir:'d',fl:false,hut:null,why:'',ct:'',cn:0,life:R(42,54)*365*SIMF*td('life'),tl:tl||this.tal(),xp:{craft:0,hunt:0,farm:0,herd:0,trade:0,war:0,mind:0,faith:0,fora:0},gen:gen||null,
-   name:this.nm(sex),hx:CAMP.x+R(-50,50),hy:CAMP.y+R(-30,40)};
-  a.spr=put(this,sex==='m'?'hero_m':'hero_f'+(Math.random()*3|0),'d_i0',x,y).setTint(pick([0xffffff,0xf4e4d4,0xe8cfb8,0xd8b898]));a.sh=this.add.image(x,y,'shadow').setScale(2).setAlpha(.35);
+   name:AST.on()?'?':this.nm(sex),hx:CAMP.x+R(-50,50),hy:CAMP.y+R(-30,40)};
+  if(AST.on()){AST.person(this,a);a.spr=AST.put(this,a,'d_i0',x,y)}else a.spr=put(this,sex==='m'?'hero_m':'hero_f'+(Math.random()*3|0),'d_i0',x,y).setTint(pick([0xffffff,0xf4e4d4,0xe8cfb8,0xd8b898]));a.sh=this.add.image(x,y,'shadow').setScale(2).setAlpha(.35);
   if(gen)a.star=this.add.text(0,0,'★',{fontSize:'16px',color:'#ffe14a',stroke:'#000',strokeThickness:3}).setOrigin(.5).setDepth(5000);
   this.ag.push(a);return a;
  }
@@ -620,7 +926,7 @@ class Game extends Phaser.Scene{
  unStuck(a){const f=this.fc;if(!f)return;for(let i=0;i<30;i++){const e=R(0,6.283),x=cl(CAMP.x+Math.cos(e)*R(1.12,1.5)*f.rx,80,WW-80),y=cl(CAMP.y+Math.sin(e)*R(1.12,1.5)*f.ry,80,WH-80);if(!pin(f.v,x,y)&&this.fdist(x,y)>40&&!river(x,y)){a.x=x;a.y=y;break}}a.isStuck=false;a.stk=0;a.task=null;a.sl=false;if(a.hut){a.hut.occ--;a.hut=null}}
  unstick(a){const f=this.fc;if(!f||!f.gates.length)return;const ia=pin(f.v,a.x,a.y);let g=null,bd=1e9;f.gates.forEach(q=>{const d=Math.hypot(q.x-a.x,q.y-a.y);if(d<bd){bd=d;g=q}});const P=ia?g.i:g.o;a.x=P.x;a.y=P.y;a.stk=0}
  jobs(T,n){const ad=this.ag.filter(a=>a.age>=5110);if(!ad.length)return;const un=Object.keys(JOBS).filter(k=>JOBS[k].ok(this,T,n)),JW=k=>{const sh=JOBS[k].sh,A=ad.length,cr=this.S.food<n*1.2;if(k==='scholar')return A<8||cr?0:sh;if(k==='priest')return A<14||cr?0:sh;if(k==='blacksmith')return cr?0:sh;if(k==='warrior')return sh*(1+Math.min(1,(this.rp||0)*.3));if(cr&&(k==='farmer'||k==='hunter'||k==='forager'))return sh*1.35;return sh},tot=un.reduce((q,k)=>q+JW(k),0)||1,cnt={};un.forEach(k=>cnt[k]=0);ad.forEach(a=>{if(cnt[a.job]!==undefined)cnt[a.job]++});
-  const tg=k=>Math.max(JW(k)>0?1:0,Math.round(ad.length*JW(k)/tot),Math.min(Math.floor(ad.length/2),this.eraJobNeed(k))),setJ=(a,k)=>{if(a.sw){a.sw.destroy();a.sw=null}a.sold=k==='warrior'?1:0;a.job=k;const J=JOBS[k],old=a.mhp||100;a.mhp=100*(J.cls==='fighter'?1.5:1)*(k==='warrior'?td('whp'):1)*(J.cls==='villager'?td('vhp'):1);a.hp=Math.min(a.mhp,a.hp*a.mhp/old);a.sw=this.add.text(0,0,J.ic,{fontSize:'10px'}).setOrigin(.5).setDepth(5000);if(a.ov)a.ov.destroy();a.ov=this.add.image(a.x,a.y,'hk','d_i0').setOrigin(.5,SH.hk.fy/SH.hk.ch).setTint(J.col)};
+  const tg=k=>Math.max(JW(k)>0?1:0,Math.round(ad.length*JW(k)/tot),Math.min(Math.floor(ad.length/2),this.eraJobNeed(k))),setJ=(a,k)=>{if(a.sw){a.sw.destroy();a.sw=null}a.sold=k==='warrior'?1:0;a.job=k;const J=JOBS[k],old=a.mhp||100;a.mhp=100*(J.cls==='fighter'?1.5:1)*(k==='warrior'?td('whp'):1)*(J.cls==='villager'?td('vhp'):1);a.hp=Math.min(a.mhp,a.hp*a.mhp/old);a.sw=this.add.text(0,0,J.ic,{fontSize:'10px'}).setOrigin(.5).setDepth(5000);if(a.ov)a.ov.destroy();if(a.ast){a.ov=null;AST.job(this,a,J,k)}else a.ov=this.add.image(a.x,a.y,'hk','d_i0').setOrigin(.5,SH.hk.fy/SH.hk.ch).setTint(J.col)};
   ad.filter(a=>cnt[a.job]===undefined).forEach(a=>{let b=null,bs=-1;un.forEach(k=>{if(tg(k)<1)return;const v=a.tl[JOBS[k].tal]*(1+Math.max(0,tg(k)-cnt[k]));if(v>bs){bs=v;b=k}});if((a.cad|0)>=15&&cnt.warrior!==undefined){b='warrior';a.xp.war=(a.xp.war||0)+30;a.vet=1}if((a.pj||a.gj)&&cnt[a.pj||a.gj]!==undefined)b=a.pj||a.gj;cnt[b]++;setJ(a,b)});
   let m=0;for(const k of un){if(m>=2)break;if(cnt[k]>=tg(k))continue;const c=ad.filter(a=>a.job!==k&&!a.king&&!a.vet&&cnt[a.job]>tg(a.job)).sort((a,b)=>b.tl[JOBS[k].tal]-a.tl[JOBS[k].tal])[0];if(c){cnt[c.job]--;cnt[k]++;setJ(c,k);m++}}this.jobN=cnt;
   const jl=k=>this.ag.filter(a=>a.job===k&&a.age>=5110);this.rel=Math.min(.5,jl('priest').reduce((q,a)=>q+.08*a.tl.faith,0));this.sch=Math.min(.6,jl('scholar').reduce((q,a)=>q+.1*a.tl.mind,0));this.frm=Math.min(.5,jl('farmer').reduce((q,a)=>q+.04*a.tl.farm,0));
@@ -668,7 +974,7 @@ class Game extends Phaser.Scene{
   const g=D.g;g.clear();const W=[12,18,22],C=[0x9a7a4a,0xa89070,0x9a9aa8];[1,0].forEach(pass=>{D.tl.forEach(k=>{if(!k.t)return;const w=W[k.t-1]+(pass?6:0);g.fillStyle(pass?(k.t>2?0x56546a:0x6a4a2a):C[k.t-1],1);if(k.ns)g.fillRect(k.x-w/2,k.y-16,w,32);else g.fillRect(k.x-16,k.y-w/2,32,w)})});
   const mt=Math.max(...D.tl.map(k=>k.t));g.fillStyle(C[mt-1],1);g.fillRect(CAMP.x-W[mt-1],CAMP.y+10-W[mt-1],W[mt-1]*2,W[mt-1]*2)}
  die(a,why){if(a.ff)this.ffDeath(a,why||a.why||'lainnya');blDie(this,a,why);const _w=why||'lainnya',_j=a.age<5110?'anak':(a.job||'tanpa job');this.ds=this.ds||{};this.ds[_w]=(this.ds[_w]||0)+1;this.dj=this.dj||{};this.dj[_j]=(this.dj[_j]||0)+1;
-  if(a.sp)a.sp.sp=null;if(a.cr)a.cr.destroy();if(a.sw)a.sw.destroy();if(a.ov)a.ov.destroy();if(a.king){this.king=null;this.ev('Pencapaian: '+a.title+' '+a.name+' wafat; takhta kosong, Pimpinan baru akan dicari.')}if(a.hut)a.hut.occ--;a.spr.destroy();a.sh.destroy();if(a.star)a.star.destroy();this.ag=this.ag.filter(q=>q!==a);if(this.sel===a)this.sel=null;
+  if(a.sp)a.sp.sp=null;if(a.cr)a.cr.destroy();if(a.sw)a.sw.destroy();if(a.ov)a.ov.destroy();if(a.king){this.king=null;this.ev('Pencapaian: '+a.title+' '+a.name+' wafat; takhta kosong, Pimpinan baru akan dicari.')}if(a.hut)a.hut.occ--;a.spr.destroy();a.sh.destroy();if(a.astKey&&this.textures.exists(a.astKey))this.textures.remove(a.astKey);if(a.star)a.star.destroy();this.ag=this.ag.filter(q=>q!==a);if(this.sel===a)this.sel=null;
   this.dead++;this.cause[why]=(this.cause[why]||0)+1;this.ev(a.name+(a.gen?' ★':'')+' ('+Math.floor(a.age/365/SIMF)+' th) '+(why==='meninggalkan desa'?'meninggalkan desa.':'meninggal: '+why+'.'));
  }
  birth(m){
@@ -829,12 +1135,22 @@ class Game extends Phaser.Scene{
  initVillages(){const NM1=['Batu','Lembah','Akar','Pasir','Tebing','Sungai','Hutan','Bukit','Karang','Embun'],NM2=['Karang','Senja','Hitam','Emas','Merah','Perak','Tinggi','Sunyi','Angin','Api'],SY=['ka','ro','mi','tu','sa','ne','lo','da','ri','bu','ha','ze'],TR2=Phaser.Utils.Array.Shuffle(TRIBES.filter(t=>t!==TR).slice()),SPC=['besi','pangan','kulit','batu','bijih','kriya'],V=[],cnt=2+((Math.random()*3)|0),a0=R(0,6.28),used=new Set();
   for(let i=0;i<cnt;i++){let p=null;for(let t=0;t<200&&!p;t++){const w2=t>=70,a=a0+i/cnt*6.283+R(-.5-(w2?1:0),.5+(w2?1:0)),x=cl(CAMP.x+Math.cos(a)*(w2?R(1050,1750):R(1250,1650)),240,WW-240),y=cl(CAMP.y+Math.sin(a)*(w2?R(750,1250):R(850,1150)),240,WH-240);if((Math.abs(x-CAMP.x)>720||Math.abs(y-CAMP.y)>560)&&Math.hypot(x-CAMP.x-672,y-CAMP.y-200)>300&&wdist(x,y)>70&&elev(x,y)<(MAP.rl||.42)-(w2?.01:.04)&&V.every(v=>Math.hypot(v.x-x,v.y-y)>(w2?520:650)))p={x,y}}
    if(!p)continue;let nm;do{nm=pick(NM1)+' '+pick(NM2)}while(used.has(nm));used.add(nm);const tr=pick(['dagang','dagang','perang','perang','damai','damai']),t2=TR2[i%TR2.length],w=pick(SY)+pick(SY)+pick(['n','r','k','m','']),att=tr==='dagang'?R(-5,25):tr==='perang'?R(-45,-15):R(10,40),str=tr==='perang'?R(7,11):tr==='dagang'?R(4,7):R(3,6);
-   V.push({id:i,name:nm,leader:w[0].toUpperCase()+w.slice(1),trait:tr,col:t2.m,tint:mixW(t2.m,.45),att,str,spec:pick(SPC),x:p.x,y:p.y,known:0,ally:0,trades:0,rc:0,tc:0,ac:0,sp:[]})}
+   V.push(this.vModel({id:i,name:nm,leader:w[0].toUpperCase()+w.slice(1),trait:tr,col:t2.m,tint:mixW(t2.m,.45),att,str,spec:pick(SPC),x:p.x,y:p.y,known:0,ally:0,trades:0,rc:0,tc:0,ac:0,sp:[]},i))}
   this.vil=V}
+ vModel(v,i){const SZ=[['kecil',.6],['sedang',1],['besar',1.55]],w=v.trait==='perang'?[2,3,2]:v.trait==='dagang'?[2,4,1]:[3,3,1],r=Math.random()*(w[0]+w[1]+w[2]),si=r<w[0]?0:r<w[0]+w[1]?1:2;
+  v.sz=SZ[si][0];v.szk=SZ[si][1];v.pop=Math.round(R(10,18)*v.szk*(v.trait==='damai'?1.2:1));v.eraF=R(.8,3.2)+(si===2?.8:si===0?-.3:0);
+  v.army=Math.max(2,Math.round(v.pop*(v.trait==='perang'?.34:v.trait==='dagang'?.14:.18)));v.res={food:v.pop*R(5,9),wood:v.pop*R(2,5),stone:v.pop*R(1,3),iron:0,hide:v.pop*R(.5,2)};
+  const tb=TRIBES.find(t=>t.m===v.col);v.col2=tb?tb.o:0xf0e2c0;if(this.cOff===undefined)this.cOff=(Math.random()*6)|0;v.cul=AST.budaya(i,this.cOff);
+  const l=AST.gen({sex:Math.random()<.5?'m':'f',kind:'villager',cul:v.cul,style:v.cul.style,surname:true});v.leader=l.name;v.ldc=l.code;return v}
+ vSim(v){const pe=this.eraI();let r=.004*(v.trait==='dagang'?1.25:v.trait==='perang'?1:.9);if(v.eraF<pe-1.5)r*=1.8;else if(v.eraF>pe+2)r*=.4;v.eraF=Math.min(8,v.eraF+r);
+  const f=v.res,sp=v.spec,ek=Math.floor(v.eraF);f.food+=v.pop*(sp==='pangan'?.75:.55)*(.8+.1*ek)-v.pop*.57;f.wood+=v.pop*.15;f.stone+=v.pop*(sp==='batu'?.25:.1);f.hide+=v.pop*(sp==='kulit'?.12:.04);if(v.eraF>=5.5)f.iron+=v.pop*((sp==='besi'||sp==='bijih')?.12:.04);
+  const cap=v.pop*45;for(const k in f)f[k]=cl(f[k],0,cap);
+  if(f.food>v.pop*6&&v.pop<60*v.szk*1.3&&Math.random()<.02)v.pop++;else if(f.food<=1&&v.pop>4&&Math.random()<.06)v.pop--;
+  v.army=Math.max(2,Math.min(Math.round(v.pop*.5),Math.round(v.pop*(v.trait==='perang'?.34:.18)*(1+.04*ek))));v.str+=(cl(2+v.army*.5*(1+.05*ek),2,30)-v.str)*.1}
  vRel(v){const a=v.att,r=v.ally?'sekutu':a>=25?'bersahabat':a>-25?'netral':a>-50?'tegang':'musuh';if(v.ic)v.ic.setText(v.ally?'🤝':a>=25?'💱':a>-25?'🏳️':a>-50?'⚠️':'⚔️');return r}
  reveal(v){v.known=1;const x=v.x,y=v.y,off=[[-70,0],[70,0],[-70,64],[70,64],[0,-64]],fr=['house','stone','house','stone','hall'];
   off.forEach((o,i)=>{const q=put(this,'house',fr[i],x+o[0],y+o[1]).setDepth(y+o[1]).setTint(v.tint);if(i===4)q.setScale(SC()*1.3);v.sp.push(q)});
-  v.sp.push(put(this,'props','camp0',x,y+24).setDepth(y+24));v.gr=this.add.graphics().setDepth(y-80);v.gr.fillStyle(0x4a2d16,1);v.gr.fillRect(x-1,y-110,3,56);v.gr.fillStyle(v.col,1);v.gr.fillTriangle(x+2,y-110,x+34,y-100,x+2,y-88);
+  v.sp.push(put(this,'props','camp0',x,y+24).setDepth(y+24));v.gr=this.add.graphics().setDepth(y-80);v.gr.fillStyle(0x4a2d16,1);v.gr.fillRect(x-1,y-110,3,56);v.bn=this.add.image(x+2,y-110,AST.banner(this,v)).setOrigin(0,0).setScale(1.6).setDepth(y-79);this.tweens.add({targets:v.bn,scaleX:1.3,duration:900+v.id*130,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
   v.lab=this.add.text(x,y-124,'Desa '+v.name,{fontFamily:'Cinzel,serif',fontSize:'15px',color:'#f0e2c0',stroke:'#1a0f05',strokeThickness:4}).setOrigin(.5).setDepth(5000);v.ic=this.add.text(x,y-146,'',{fontSize:'18px'}).setOrigin(.5).setDepth(5000);this.vRel(v);
   const dx=x-CAMP.x,dy=y-CAMP.y,dir=Math.abs(dx)>Math.abs(dy)*1.6?(dx>0?'timur':'barat'):Math.abs(dy)>Math.abs(dx)*1.6?(dy>0?'selatan':'utara'):(dy>0?(dx>0?'tenggara':'barat daya'):(dx>0?'timur laut':'barat laut'));
   if(!(this.drag>0)){const c=this.cameras.main,ox=c.midPoint.x,oy=c.midPoint.y;c.pan(x,y,1300,'Sine.easeInOut');this.time.delayedCall(2800,()=>{if(!this.over)c.pan(ox,oy,1300,'Sine.easeInOut')})}
@@ -848,8 +1164,8 @@ class Game extends Phaser.Scene{
    if(v.att>=-10&&!this.raid&&this.t>=v.tc&&Math.random()<.01*(1+(v.ally?1:0)+(v.att>40?.5:0))){v.tc=this.t+2880;this.spawnCaravan(v)}
    if(!v.ally&&v.att>=45&&!this.dp&&!this.fp&&this.t>=v.ac&&V.filter(q=>q.ally).length<2&&Math.random()<.03)this.dipOffer(v);
    if(v.att<=-30&&!this.raid&&n>=12&&this.t>=v.rc&&this.t>=(this.lrt||0)&&Math.random()<.003*(1+(-v.att-30)/40)*(v.str/8)){v.rc=this.t+6000;this.lrt=this.t+3600;this.spawnRaid(v)}
-   this.vRel(v)})}
- spawnCaravan(v){const k=2+((Math.random()*2)|0),c={v,ph:0,w:0,l:[]};for(let i=0;i<k;i++){const key=i===0?'hero_m':'hero_f'+(Math.random()*3|0),q=put(this,key,'s_i0',v.x+(i-1)*14,v.y+30).setTint(v.tint).setDepth(v.y+30);c.l.push({s:q,x:q.x,y:q.y,ic:i===0?this.add.text(q.x,q.y-34,'💱',{fontSize:'14px'}).setOrigin(.5).setDepth(5000):null})}(this.cv=this.cv||[]).push(c);this.ev('Kafilah dagang dari Desa '+v.name+' terlihat menuju desa.')}
+   this.vSim(v);this.vRel(v)})}
+ spawnCaravan(v){const k=2+((Math.random()*2)|0),c={v,ph:0,w:0,l:[]};for(let i=0;i<k;i++){const q=AST.on()?AST.tsprite(this,v,i,v.x+(i-1)*14,v.y+30).setDepth(v.y+30):put(this,i===0?'hero_m':'hero_f'+(Math.random()*3|0),'s_i0',v.x+(i-1)*14,v.y+30).setTint(v.tint).setDepth(v.y+30);c.l.push({s:q,x:q.x,y:q.y,ic:i===0?this.add.text(q.x,q.y-34,'💱',{fontSize:'14px'}).setOrigin(.5).setDepth(5000):null})}(this.cv=this.cv||[]).push(c);this.ev('Kafilah dagang dari Desa '+v.name+' terlihat menuju desa.')}
  cvStep(s){const L=this.cv;if(!L||!L.length)return;for(let ci=L.length-1;ci>=0;ci--){const c=L[ci],m=this.bld.market,tx=m?m.x:CAMP.x,ty=m?m.y+30:CAMP.y+60;let done=0;
    c.l.forEach((o,i)=>{const gx=c.ph===2?c.v.x+(i-1)*14:tx+(i-1)*18,gy=c.ph===2?c.v.y+30:ty,w=this.wp(o.x,o.y,gx,gy),dx=w.x-o.x,dy=w.y-o.y,d=Math.hypot(dx,dy),st=Math.min(d,60*MOVE_K*s),k=Math.floor(this.t*3)%4,fin=w.f===1&&d<=3;
     if(c.ph===1){o.s.setFrame('d_i0')}else if(fin)done++;else{const nx=o.x+dx/d*st,ny=o.y+dy/d*st;if(!this.hit(o.x,o.y,nx,ny)){o.x=nx;o.y=ny}o.s.setFrame(Math.abs(dy)>Math.abs(dx)?(dy>0?'d_w':'u_w')+k:'s_w'+k).setFlipX(dx<0)}
@@ -860,8 +1176,8 @@ class Game extends Phaser.Scene{
  dipDone(v,a){this.dp=0;if(a){v.ally=1;v.att=Math.max(v.att,60);this.ev('Diplomasi: aliansi dengan Desa '+v.name+' terbentuk!')}else v.att-=8;this.vRel(v);if(!this.over)this.si=this.dps}
  raidEnd(r,win){if(this.bl){const q=this.bl.raids[this.bl.raids.length-1];if(q&&q.res===null)q.res=win?'menang':'kalah'}const v=r.v;if(!v)return;if(win){v.str=Math.max(3,v.str-1.5);v.att=Math.max(-100,v.att-4)}else{v.str=Math.min(30,v.str+.8);v.att=Math.min(100,v.att+2)}}
  spawnRaid(v){const T=this.tech,n=this.ag.length,e=R(0,6.28),sp0=v?{x:v.x,y:v.y}:this.outPt(1000,1400),sx=sp0.x,sy=sp0.y,k=v?Math.min(12,2+Math.round(v.str/3)):Math.min(10,3+Math.floor(n/10));
-  this.raid={ph:0,sx,sy,l:[],v:v||null};this.rp=(this.rp||0)+1;this.bl.raids.push({d:Math.floor(this.t/24),from:v?v.name:'pengembara',n:k,res:null});for(let i=0;i<k;i++){const q=put(this,'hero_r','s_i0',sx+R(-30,30),sy+R(-20,20)).setTint(v?v.tint:pick([0xffffff,0xcce0ff,0xffd8b0]));this.raid.l.push({s:q,x:q.x,y:q.y,pw:R(.7,1.4)*(T.smelt?1.4:1)*(v?Math.max(.8,v.str/8):1),hp:3,ic:this.mkRaidIcon(q.x,q.y)})}
-  const ld=this.raid.l[0];ld.hp=6;ld.s.setScale(SC()*1.35);ld.cr=this.add.text(0,0,'♛',{fontSize:'14px',color:'#ff6a3a',stroke:'#000',strokeThickness:3}).setOrigin(.5).setDepth(5000);this.ev('Serangan: pasukan pengembara asing terlihat mendekat'+(v?' dari Desa '+v.name:' dari kejauhan')+'!')}
+  this.raid={ph:0,sx,sy,l:[],v:v||null};this.rp=(this.rp||0)+1;this.bl.raids.push({d:Math.floor(this.t/24),from:v?v.name:'pengembara',n:k,res:null});for(let i=0;i<k;i++){const q=AST.on()?AST.rsprite(this,v,i,sx+R(-30,30),sy+R(-20,20)):put(this,'hero_r','s_i0',sx+R(-30,30),sy+R(-20,20)).setTint(v?v.tint:pick([0xffffff,0xcce0ff,0xffd8b0]));this.raid.l.push({s:q,x:q.x,y:q.y,pw:R(.7,1.4)*(T.smelt?1.4:1)*(v?Math.max(.8,v.str/8):1),hp:3,ic:this.mkRaidIcon(q.x,q.y)})}
+  const ld=this.raid.l[0];ld.hp=6;ld.s.setScale((ld.s.asc||SC())*1.35);ld.cr=this.add.text(0,0,'♛',{fontSize:'14px',color:'#ff6a3a',stroke:'#000',strokeThickness:3}).setOrigin(.5).setDepth(5000);this.ev('Serangan: pasukan pengembara asing terlihat mendekat'+(v?' dari Desa '+v.name:' dari kejauhan')+'!')}
  econStep(T,S){const B=this.bld;
   if(T.irrig){const f=this.fields.find(f=>!f.up&&f.s&&f.s.active);if(f&&S.wood>=1){S.wood-=1;f.up=1;f.s.setTexture('farm','p'+f.st).setOrigin(.5,SH.farm.fy/SH.farm.ch);if(!this.fup){this.fup=1;this.ev('Upgrade: plant box ditingkatkan menjadi lahan tani (1 per hari).')}}}
   if(T.irrig&&!B.silo&&S.wood>=14*td('cost')&&S.stone>=6*td('cost')&&this.jobN&&this.jobN.farmer>0){S.wood-=14*td('cost');S.stone-=6*td('cost');const x=CAMP.x+672,y=CAMP.y+200;B.silo=put(this,'bld','bk_silo',x,y).setDepth(y);this.clear(x,y,40);this.ev('Upgrade: Farm Silo berdiri di area lahan tani.')}
@@ -869,7 +1185,7 @@ class Game extends Phaser.Scene{
  mineSite(){const M=this.tmx=this.tmx||this.tmap();let b=null,bd=1e9;for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){if(M[j][i]!=='rock')continue;const x=i*32+16,y=j*32+16,dx=Math.abs(x-CAMP.x),dy=Math.abs(y-CAMP.y);if(dx<720&&dy<540)continue;if(this.vil&&this.vil.some(v=>Math.hypot(v.x-x,v.y-y)<260))continue;const d=Math.hypot(x-CAMP.x,y-CAMP.y);if(d<bd&&d<1900){bd=d;b={x,y}}}return b}
  nm(sex){const U=this.nmUsed=this.nmUsed||new Set(),P=sex==='f'?['ma','ri','na','la','si','ta','ke','yu','ani','lia','ra','du','so','ve']:['ka','ro','tu','bo','da','ne','mu','ga','ren','sor','tak','dun','bar','lok'],E=sex==='f'?['a','i','e','ra']:['n','k','r','t','m'];
   for(let i=0;i<60;i++){let w=pick(P)+pick(P);if(Math.random()<.4)w+=pick(E);w=w[0].toUpperCase()+w.slice(1);if(!U.has(w)){U.add(w);return w}}let b=pick(P);b=b[0].toUpperCase()+b.slice(1)+pick(E);let n=2;while(U.has(b+' '+n))n++;U.add(b+' '+n);return b+' '+n}
- nmChild(sex,m,f){const U=this.nmUsed=this.nmUsed||new Set(),P=sex==='f'?['ma','ri','na','la','si','ta','ke','yu','lia','ra']:['ka','ro','tu','bo','da','ne','mu','ga','ren','sor'],E=sex==='f'?['a','i','e']:['n','k','r','t'],root=(Math.random()<.5?m:(f||m)).name.toLowerCase().replace(/[^a-z]/g,'').slice(0,2);
+ nmChild(sex,m,f){if(AST.on())return AST.childName(this,sex,m,f);const U=this.nmUsed=this.nmUsed||new Set(),P=sex==='f'?['ma','ri','na','la','si','ta','ke','yu','lia','ra']:['ka','ro','tu','bo','da','ne','mu','ga','ren','sor'],E=sex==='f'?['a','i','e']:['n','k','r','t'],root=(Math.random()<.5?m:(f||m)).name.toLowerCase().replace(/[^a-z]/g,'').slice(0,2);
   for(let i=0;i<40;i++){let w=(Math.random()<.45?root:pick(P))+pick(P);if(Math.random()<.4)w+=pick(E);w=w[0].toUpperCase()+w.slice(1);if(!U.has(w)){U.add(w);return w}}return this.nm(sex)}
  ps(){return this.pros&&this.t<this.pros.t}
  pf(k){if(!this.ps())return 1;const B={fert:1.25,tech:1.4,farm:1.2,sick:.85,heal:1.1},X={penemu:{tech:1.6},tabib:{sick:.7,heal:1.4},'jago tani':{farm:1.4},pemimpin:{fert:1.35}}[this.pros.type]||{};return X[k]!==undefined?X[k]:(B[k]||1)}
@@ -897,7 +1213,7 @@ class Game extends Phaser.Scene{
   const all=this.allTw();if(!all.length)return;const cur=all.find(x=>!x.done);
   {const trT=this.towerTier(),up=all.find(x=>x.done&&(x.tier||1)<trT);if(up){const c3=(up.tier||1)===1?{wood:6,stone:10,iron:0}:{wood:0,stone:12,iron:3};if(S.wood>=c3.wood&&S.stone>=c3.stone&&(S.iron||0)>=c3.iron){S.wood-=c3.wood;S.stone-=c3.stone;S.iron-=c3.iron;up.tier=(up.tier||1)+1;up.mx=Math.round((up.mx||100)*1.4);up.hp=up.mx;if(up.s)up.s.setScale(up.s.scaleX*1.1);this.ev('Upgrade: Watch Tower diperkuat menjadi Tingkat '+up.tier+' (jangkauan, laju tembak, dan daya rusak naik).')}}}
   if(cur){const cc=c*2.8;if(S[kf(t)]>=cc){S[kf(t)]-=cc;cur.bt++;if(!cur.mk)cur.mk=this.add.text(cur.x,cur.y-24,'🚧',{fontSize:'18px'}).setOrigin(.5).setDepth(5000);cur.mk.setText('🚧 '+cur.bt+'/10');
-    if(cur.bt>=10){cur.done=1;cur.mk.destroy();cur.mk=null;cur.mx=[240,300,450,600][t];cur.hp=cur.mx;cur.s=put(this,'bld','bk_watch',cur.x,cur.y).setDepth(cur.y);cur.ar=put(this,'hero_m','s_i0',cur.x,cur.y-62).setDepth(cur.y+1).setScale(SC()*.85).setTint(0xd0d6e0);this.clear(cur.x,cur.y,40);this.ev('Upgrade: Watch Tower selesai (10 hari); Archer lahir dan berjaga.')}}}
+    if(cur.bt>=10){cur.done=1;cur.mk.destroy();cur.mk=null;cur.mx=[240,300,450,600][t];cur.hp=cur.mx;cur.s=put(this,'bld','bk_watch',cur.x,cur.y).setDepth(cur.y);cur.ar=AST.on()?AST.archer(this,cur.x,cur.y-62).setDepth(cur.y+1):put(this,'hero_m','s_i0',cur.x,cur.y-62).setDepth(cur.y+1).setScale(SC()*.85).setTint(0xd0d6e0);this.clear(cur.x,cur.y,40);this.ev('Upgrade: Watch Tower selesai (10 hari); Archer lahir dan berjaga.')}}}
   else{const d=all.find(x=>x.hp<x.mx);if(d&&S[kf(t)]>=c){S[kf(t)]-=c;d.hp=Math.min(d.mx,d.hp+30);this.towerTint(d)}}}
  towerTint(t){if(t.s)t.s.setTint(t.hp<t.mx*.5?0xcc9988:0xffffff)}
  hitTowers(dmg,why,k){const f=this.fc;if(!f)return;const al=this.allTw().filter(t=>t.done);Phaser.Utils.Array.Shuffle(al).slice(0,k||99).forEach(t=>{t.hp-=dmg;this.puff(t.x,t.y-30,0x8a7a6a);if(t.hp<=0)this.killTower(t,why);else this.towerTint(t)})}
@@ -973,7 +1289,7 @@ class Game extends Phaser.Scene{
   this.rain.emitting=wx==='hujan'||wx==='badai';this.snow.emitting=wx==='salju';this.leaves.emitting=se===2&&wx!=='hujan';
   this.tn.setFillStyle(wx==='panas'?0xff9a30:wx==='hujan'||wx==='badai'?0x223355:[0x66cc66,0xffd24a,0xff8a30,0x88aaff][se],wx==='panas'?.12:wx==='hujan'?.12:wx==='badai'?.2:[.02,.06,.09,.12][se]);
   this.ag.forEach(a=>{const sp=a.spr,kid=a.age<5110;
-   sp.setPosition(a.x,a.y).setDepth(a.y+1).setScale(SC()*(kid?.72:1)).setFrame(a.sl?'d_i0':a.work?a.dir+'_a'+(Math.floor(time/200)%3):a.walk?a.dir+'_w'+(Math.floor(time/110)%4):a.dir+'_i'+(Math.floor(time/500)%2)).setFlipX(a.dir==='s'&&a.fl).setAngle(a.sl?90:0);const hid=!!(a.sl&&a.shel&&this.huts.length);if(hid)a.hd=1;else if(a.hd){a.hd=0;sp.setAlpha(0);this.tweens.add({targets:sp,alpha:1,duration:350})}sp.setVisible(!hid);a.sh.setVisible(!hid);if(a.sw)a.sw.setVisible(!hid);if(a.cr)a.cr.setVisible(!hid);if(a.star)a.star.setVisible(!hid);
+   sp.setPosition(a.x,a.y).setDepth(a.y+1).setScale((a.asc||SC())*(kid?.72:1)).setFrame(a.sl?'d_i0':a.work?a.dir+'_a'+(Math.floor(time/200)%3):a.walk?a.dir+'_w'+(Math.floor(time/110)%4):a.dir+'_i'+(Math.floor(time/500)%2)).setFlipX(a.dir==='s'&&a.fl).setAngle(a.sl?90:0);const hid=!!(a.sl&&a.shel&&this.huts.length);if(hid)a.hd=1;else if(a.hd){a.hd=0;sp.setAlpha(0);this.tweens.add({targets:sp,alpha:1,duration:350})}sp.setVisible(!hid);a.sh.setVisible(!hid);if(a.sw)a.sw.setVisible(!hid);if(a.cr)a.cr.setVisible(!hid);if(a.star)a.star.setVisible(!hid);
    if(a.ov)a.ov.setPosition(a.x,a.y).setDepth(a.y+1.01).setScale(SC()*(kid?.72:1)).setFrame(sp.frame.name).setFlipX(sp.flipX).setAngle(sp.angle).setAlpha(sp.alpha).setVisible(!hid);
    a.sh.setPosition(a.x,a.y-1).setDepth(a.y);if(a.star)a.star.setPosition(a.x,a.y-(kid?34:50)+Math.sin(time/200)*2);if(a.cr)a.cr.setPosition(a.x,a.y-(kid?40:60));if(a.sw)a.sw.setPosition(a.x+11,a.y-28)});
   this.deer.forEach(d=>{if(!d.dead)d.s.setPosition(d.x,d.y).setDepth(d.y).setFlipX(d.fl).setFrame(d.pf+(Math.abs(d.tx-d.x)+Math.abs(d.ty-d.y)>3?Math.floor(time/200)%2:0))});
@@ -1003,7 +1319,7 @@ function updUI(g){
  if(sa)se.innerHTML='<span class="tag">'+sa.name+(sa.gen?' ★ '+sa.gen:'')+(sa.king?' ♛ '+sa.title:'')+(sa.job?' '+JOBS[sa.job].ic+JOBS[sa.job].n:'')+'</span>'+(sa.sex==='m'?'L':'P')+', '+Math.floor(sa.age/365/SIMF)+' th — '+(sa.sl?'tidur':sa.task?TK[sa.task.k]:'diam')+'<br>Lapar '+Math.round(100-sa.hun)+' · Energi '+Math.round(sa.en)+' · HP '+Math.round(sa.hp)+'<br>Bakat: crafting '+sa.tl.craft.toFixed(1)+' · buru '+sa.tl.hunt.toFixed(1)+' · tani '+sa.tl.farm.toFixed(1)+' · ternak '+sa.tl.herd.toFixed(1)+' · dagang '+sa.tl.trade.toFixed(1)+' · perang '+sa.tl.war.toFixed(1)+'<br>Pasangan: '+(sa.sp?sa.sp.name:'-')+' · Anak '+(sa.kids|0)+(sa.preg?' · hamil':'')+(sa.sold?'<br>Senjata: '+wpn(GM)+' · Zirah: '+arm(GM):'');
  const top=Object.entries(g.cause).sort((a,b)=>b[1]-a[1]).slice(0,3).map(e=>e[0]+' '+e[1]).join(', ');
  const ac={};g.ag.forEach(a=>{if(a.age<5110)return;const k=a.sl?'tidur':(a.task?(TK[a.task.k]||a.task.k):'mencari tugas');ac[k]=(ac[k]||0)+1});const acs=Object.entries(ac).sort((x,y)=>y[1]-x[1]).map(e=>e[0]+' '+e[1]).join(' · ');
- $('sumt').innerHTML=TR.n+' · '+MAP.n+' · <i>'+TEND[CFG.tend].n+'</i><br>'+(n?n+' jiwa ('+m+' L, '+(n-m)+' P, '+k+' anak). '+(S.food>=n*2?'Pangan aman. ':S.food>=1?'Pangan menipis. ':'Pangan habis — kelaparan mengancam. ')+(g.capac()>=n?'Semua beratap. ':'Sebagian tidur di tanah terbuka. ')+(g.tech.fire?'Api menyala. ':'Belum mengenal api. ')+(g.ps()?'✨ Surge '+g.pros.type+' ('+Math.ceil((g.pros.t-g.t)/24)+' hr). ':'')+(g.kingBonus()?'👑 Pimpinan di desa: Defense +10%. ':'')+g.eraNeed()+(g.fc&&g.fc.isBroken?'🚧 Pagar rusak'+(g.fc.rp?' (perbaikan '+g.fc.rp+' hr)':'')+'. ':'')+'Lahir '+g.born+' / Wafat '+g.dead+'. '+(g.jobN?Object.entries(g.jobN).map(([k,v])=>JOBS[k].ic+v).join(' ')+'. ':'')+(g.gens.length?'Jenius lahir: '+g.gens.length+'. ':'')+(g.king?g.king.title+' '+g.king.name+'. ':'')+(g.ag.some(a=>a.sold)?'Warrior '+g.ag.filter(a=>a.sold).length+'. ':'')+(top?'Penyebab wafat terbanyak: '+top+'.':'')+(acs?'<br>Aktivitas dewasa: '+acs+'.':'')+(g.ffN0&&g.ag.some(a=>a.ff)?'<br>Founding Fathers: '+g.ag.filter(a=>a.ff).length+'/'+g.ffN0+' hidup.':''):'Desa telah punah.');
+ $('sumt').innerHTML=TR.n+' · '+MAP.n+' · <i>'+TEND[CFG.tend].n+'</i><br>'+(n?n+' jiwa ('+m+' L, '+(n-m)+' P, '+k+' anak). '+(S.food>=n*2?'Pangan aman. ':S.food>=1?'Pangan menipis. ':'Pangan habis — kelaparan mengancam. ')+(g.capac()>=n?'Semua beratap. ':'Sebagian tidur di tanah terbuka. ')+(g.tech.fire?'Api menyala. ':'Belum mengenal api. ')+(g.ps()?'✨ Surge '+g.pros.type+' ('+Math.ceil((g.pros.t-g.t)/24)+' hr). ':'')+(g.kingBonus()?'👑 Pimpinan di desa: Defense +10%. ':'')+g.eraNeed()+(g.fc&&g.fc.isBroken?'🚧 Pagar rusak'+(g.fc.rp?' (perbaikan '+g.fc.rp+' hr)':'')+'. ':'')+'Lahir '+g.born+' / Wafat '+g.dead+'. '+(g.jobN?Object.entries(g.jobN).map(([k,v])=>JOBS[k].ic+v).join(' ')+'. ':'')+(g.gens.length?'Jenius lahir: '+g.gens.length+'. ':'')+(g.king?g.king.title+' '+g.king.name+'. ':'')+(g.ag.some(a=>a.sold)?'Warrior '+g.ag.filter(a=>a.sold).length+'. ':'')+(top?'Penyebab wafat terbanyak: '+top+'.':'')+(acs?'<br>Aktivitas dewasa: '+acs+'.':'')+(g.ffN0&&g.ag.some(a=>a.ff)?'<br>Founding Fathers: '+g.ag.filter(a=>a.ff).length+'/'+g.ffN0+' hidup.':'')+(g.vil&&g.vil.some(v=>v.known)?'<br>Desa tetangga: '+g.vil.filter(v=>v.known).map(v=>v.name+' ('+v.sz+', '+ERA[Math.min(8,v.eraF|0)]+', pop≈'+v.pop+', pasukan≈'+v.army+', '+v.cul.hn+')').join('; ')+'.':''):'Desa telah punah.');
  eraUi(g);const _d=document.getElementById('dbg');if(_d&&_d.style.display==='block'&&(!g._dt||performance.now()-g._dt>400)){g._dt=performance.now();g.dbgUpd()}
  if(g.nn!==g.nr){g.nr=g.nn;$('nb').innerHTML=g.notes.slice(0,40).map(x=>'<div>'+x+'</div>').join('')||'<i>Belum ada.</i>';$('nc').textContent=g.notes.length;$('bn').textContent='🏆 '+g.notes.length;$('nd').innerHTML='<button id="ndt">'+(g.ndh?'▸':'◂')+'</button>'+(g.ndh?'':g.notes.slice(0,6).map(x=>'<span title="'+x.replace(/<[^>]*>/g,'').replace(/"/g,'')+'">'+x.split(' ')[0]+'</span>').join(''))}
  $('log').innerHTML=g.log.slice(0,8).map(x=>'<div>'+x+'</div>').join('');
